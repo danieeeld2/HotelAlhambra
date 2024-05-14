@@ -65,24 +65,37 @@ function HTML_main_container() {
 }
 
 // Función para generar el aside
-function HTML_aside() {
-    echo <<< HTML
-        </div>
-        <aside class="zona-lateral">
-            <div class="inicio-sesion">
-                <h2>Inicio de sesión y perfil de usuario</h2>
-            </div>
-            <section class="informacion-2nivel">
-                <h2>Información de Interés (Información de Segundo Nivel)</h2>
-                <ul>
-                    <li><a href="">Info 1</a></li>
-                    <li><a href="">Info 2</a></li>
-                </ul>
-            </section>
-        </aside>
+function HTML_aside() { ?>
     </div>
-    HTML;
-}
+    <aside class="zona-lateral">
+        <div class="inicio-sesion">
+            <form action="" method="post" novalidate>
+                <p>
+                    <label for="idemail">Email:</label>
+                    <input type="email" id="idemail" name="email-sesion" value=<?php if(isset($_SESSION["datos-login"]["email-sesion"])) echo  $_SESSION["datos-login"]["email-sesion"] ?>>
+                </p>
+                <?php if(isset($_SESSION["errores-login"]["email-sesion"])) echo $_SESSION["errores-login"]["email-sesion"] ?>
+                <p>
+                    <label for="idpassword">Contraseña:</label>
+                    <input type="password" id="idpassword" name="clave-sesion">
+                </p>
+                <?php if(isset($_SESSION["errores-login"]["clave-sesion"])) echo $_SESSION["errores-login"]["clave-sesion"] ?>
+                <?php if(isset($_SESSION["error-login"])) echo $_SESSION["error-login"] ?>
+                <div class="boton-lateral">
+                    <input type="submit" value="Iniciar Sesión" name="iniciar-sesion" id="boton-enviar">
+                </div>
+            </form>
+        </div>
+        <section class="informacion-2nivel">
+            <h2>Información de Interés (Información de Segundo Nivel)</h2>
+            <ul>
+                <li><a href="">Info 1</a></li>
+                <li><a href="">Info 2</a></li>
+            </ul>
+        </section>
+    </aside>
+</div>
+<?php }
 
 // Función para generar el footer
 function HTML_footer() {

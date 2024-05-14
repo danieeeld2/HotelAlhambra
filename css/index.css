@@ -82,6 +82,26 @@ nav a:hover {
     max-width: 20%; 
     background-color: #B7C4CF;
     margin-left: 10px;
+    overflow: hidden;
+}
+
+.zona-lateral label {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.zona-lateral p {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.boton-lateral {
+    display: flex;
+    justify-content: center;
+    margin-top: 5px;
 }
 
 aside h2 {
@@ -277,6 +297,10 @@ footer a:hover {
     justify-content: space-around;
     margin: 10px;
 }
+
+/* ------------------- */
+
+
 
 /* -------------------*/
 

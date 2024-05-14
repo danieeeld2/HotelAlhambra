@@ -28,4 +28,25 @@ function validarTarjeta($tarjeta) {
     if($suma % 10 == 0) return true;
     else return false;
 }
+
+function checkInyection($campo) {
+    if (preg_match('/[\'\"=<>]/', $campo)) {
+        return ""; // El campo contiene caracteres sospechosos de inyección SQL
+    }
+    // Eliminar etiquetas HTML y JavaScript sospechosas
+    $campo_limpiado = htmlspecialchars($campo, ENT_QUOTES | ENT_HTML5);
+    if($campo_limpiado == $campo) {
+        return $campo;
+    }
+    return "";
+}
+
+function limpiarSesionFormularios(){
+    if(isset($_SESSION["errores-registro"])){
+        unset($_SESSION["errores-registro"]);
+    }
+    if(isset($_SESSION["datos-registro"])){
+        unset($_SESSION["datos-registro"]);
+    }
+}
 ?>

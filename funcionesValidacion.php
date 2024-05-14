@@ -1,5 +1,6 @@
 <?php 
 require_once("funcionesAuxiliares.php");
+require_once("funcionesBD.php");
 // Función para validar los datos del formulario de registro
 function validarDatosRegistro(){
     // Inicializamos los arrays de errores y datos
@@ -13,6 +14,7 @@ function validarDatosRegistro(){
             $errores["nombre"] = "<p class='error'>El nombre no puede estar vacío</p>";
             $datos["nombre"] = "";
         }else{
+            $_POST["nombre"] = checkInyection($_POST["nombre"]);
             // Comprobar que el nombre empieza por mayúscula
             if(!preg_match("/^[A-Z][a-z]+$/", $_POST["nombre"])){
                 $errores["nombre"] = "<p class='error'>El nombre debe empezar por mayúscula y contener solo letras</p>";
@@ -27,6 +29,7 @@ function validarDatosRegistro(){
             $errores["apellidos"] = "<p class='error'>Los apellidos no pueden estar vacíos</p>";
             $datos["apellidos"] = "";
         }else{
+            $_POST["apellidos"] = checkInyection($_POST["apellidos"]);
             $datos["apellidos"] = $_POST["apellidos"];
         }
 
@@ -70,6 +73,7 @@ function validarDatosRegistro(){
             $datos["clave"] = "";
             $datos["clave-repetida"] = "";
         }else{
+            $_POST["clave"] = checkInyection($_POST["clave"]);
             // Comprobar que la clave tiene al menos 5 caracteres
             if(strlen($_POST["clave"]) < 5){
                 $errores["clave"] = "<p class='error'>La clave debe tener al menos 5 caracteres</p>";
@@ -93,6 +97,7 @@ function validarDatosRegistro(){
             $datos["tarjeta"] = "";
         }else{
             // Comprobar que la tarjeta tiene 16 dígitos
+            $_POST["tarjeta"] = str_replace(" ", "", $_POST["tarjeta"]);
             if(!preg_match("/^[0-9]{16}$/", $_POST["tarjeta"])){
                 $errores["tarjeta"] = "<p class='error'>La tarjeta debe contener 16 dígitos</p>";
                 $datos["tarjeta"] = "";
@@ -102,7 +107,7 @@ function validarDatosRegistro(){
                     $errores["tarjeta"] = "<p class='error'>La tarjeta no es válida</p>";
                     $datos["tarjeta"] = "";
                 }else{
-                    $datos["tarjeta"] = $_POST["tarjeta"];
+                    $datos["tarjeta"] = str_replace(" ","", $_POST["tarjeta"]);
                 }
             }
         }
@@ -115,5 +120,42 @@ function validarDatosRegistro(){
     }
 
     return [$errores, $datos];
+}
+
+function validarLogIn($conexion) {
+    // Inicializamos los arrays de errores y datos
+    $errores = array();
+    $datos = array();
+    if(isset($_POST["iniciar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+        // Comprobar email
+        if(empty($_POST["email-sesion"])){
+            $errores["email-sesion"] = "<p class='error'>El email no puede estar vacío</p>";
+            $datos["email-sesion"] = "";
+        }else{
+            // Comprobar que el email es válido
+            if(!filter_var($_POST["email-sesion"], FILTER_VALIDATE_EMAIL)){
+                $errores["email-sesion"] = "<p class='error'>El email no es válido</p>";
+                $datos["email-sesion"] = "";
+            }else{
+                if(checkEmail($conexion, $_POST["email-sesion"])){
+                    $datos["email-sesion"] = $_POST["email-sesion"];
+                } else {
+                    $errores["email-sesion"] = "<p class='error'>El email no está registrado</p>";
+                    $datos["email-sesion"] = "";
+                }
+            }
+        }
+
+        // Comprobar clave
+        if(empty($_POST["clave-sesion"])){
+            $errores["clave-sesion"] = "<p class='error'>La clave no puede estar vacía</p>";
+            $datos["clave-sesion"] = "";
+        } else {
+            $datos["clave-sesion"] = checkInyection($_POST["clave-sesion"]);
+        }
+
+        return [$errores, $datos];
+
+    }
 }
 ?>
