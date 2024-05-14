@@ -111,6 +111,49 @@ function HTML_footer() {
 
 // *****************************************************
 
+function HTML_pagina_inicio() {
+    echo <<< HTML
+        <div>
+            <main>
+                <!-- Breve descripción del hotel-->
+                <h2>Sobre Nosotros</h2>
+                <p>Hotel Alhambra ofrece una experiencia única en el corazón de Granada, situado en el pintoresco barrio del Albaicín con impresionantes vistas a la 
+                    majestuosa Alhambra. Nuestro hotel combina la elegancia del diseño contemporáneo con el encanto tradicional andaluz. 
+                    Disfruta de habitaciones confortables y acogedoras, terrazas con vistas panorámicas incomparables y una atención 
+                    personalizada que te hará sentir como en casa. Sumérgete en la historia y la cultura de Granada mientras te relajas en nuestro 
+                    oasis de tranquilidad en la cima de la colina.</p>
+            </main>
+            <!-- Galería de Imágenes del hotel-->
+            <section>
+                <h2>Nuestro Espacio</h2>
+                <div class="galeria">
+                    <div class="imagen">
+                        <img src="img/vistas1.jpg" alt="Vistas 1">
+                    </div>
+                    <div class="imagen">
+                        <img src="img/terraza1.jpg" alt="Terraza 1">
+                    </div>
+                    <div class="imagen">
+                        <img src="img/hab1.jpg" alt="Habitacion 1">
+                    </div>
+                    <div class="imagen">
+                        <img src="img/hab2.jpg" alt="Habitacion 2">
+                    </div>
+                </div>
+            </section>
+        </div>
+        <section>
+            <!-- Creado de cara a la práctica final. Dejp la estructura, pero falta rellenar información -->
+            <!-- Información de primer nivel, con enlaces de interés a distintos recursos y eventos -->
+            <h2>Nuestras Actividades</h2>
+            <ul>
+                <li><a href="">Enlace a Evento 1</a></li>
+                <li><a href="">Recurso de Interés 1</a></li>
+            </ul>
+        </section>
+    HTML;
+}
+
 function HTML_form_registro() { ?>
     <main>
         <section class="registro-usuarios">
@@ -176,5 +219,3 @@ function HTML_form_registro() { ?>
     </main>
 <?php }
 ?>
-
-        
