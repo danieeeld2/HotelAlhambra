@@ -1,0 +1,464 @@
+header {
+    display: flex;
+    justify-content: space-between; /* Espacio entre los elementos */
+    align-items: center; 
+    background-color: #D7C0AE;
+    padding: 10px;
+}
+
+.sesion-pantalla-reducida {
+    display: none;
+}
+
+.contacto-reducido {
+    display: none;
+}
+
+.logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Alineamos verticalmente dentro del logo */
+}
+
+.logo-image img {
+    width: 350px;
+    margin-right: 10px; 
+}
+
+.contact-info {
+    display: flex;
+    align-items: center; /* Alineamos verticalmente dentro del aside */
+}
+
+.contact-info img {
+    width: 250px;
+    margin-right: 10px;
+}
+
+header h1 {
+    margin: 0;
+    color: black;
+}
+
+nav {
+    background-color: #EEE3CB;
+    padding: 20px;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+nav li {
+    display: inline;
+    margin-right: 10px;
+}
+
+nav a {
+    text-decoration: none;
+    color: black;
+}
+
+nav a:hover {
+    text-decoration: underline;
+    text-decoration-color: #D7C0AE;
+    text-decoration-thickness: 4px;
+}
+
+.container {
+    display: flex; 
+}
+
+.main {
+    flex: 1; /* Hacemos que main ocupe todo el espacio restante */
+    margin: 10px;
+}
+
+.zona-lateral {
+    flex-grow: 1; /* Permitimos que el aside crezca */
+    flex-basis: 20%; 
+    max-width: 20%; 
+    background-color: #B7C4CF;
+    margin-left: 10px;
+}
+
+aside h2 {
+    margin: 0;
+    padding: 10px;
+    color: black;
+    text-align: center;
+    font-size: 22px;
+}
+
+aside ul {
+    list-style-type: none;
+    margin: 20px;
+    padding: 0;
+}
+
+aside li {
+    margin: 0;
+}
+
+aside li a {
+    text-decoration: none;
+    color: black;
+}
+
+footer {
+    background-color: #967E76;
+    color: black;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+footer .fila {
+    display: flex;
+    justify-content: space-between;
+}
+
+.fila div {
+    flex: 1;
+}
+
+footer a {
+    color: black;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+footer a:hover {
+    text-decoration: underline;
+    text-decoration-color: black;
+    text-decoration-thickness: 4px;
+}
+
+/* ------------------- */
+
+.galeria {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    align-items: self-end;
+}
+
+.imagen {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid black;
+    padding: 5px;
+    margin: 10px;
+    background-color: #EEE3CB;
+    align-items: center; 
+    width: 320px;
+}
+
+.imagen img {
+    flex: 1; /* Hacemos que la imagen crezca para rellenar el espacio disponible */
+    border: 1px solid lightgrey;
+    padding: 5px;
+    background-color: white;
+    max-width: calc(100% - 12px);
+}
+
+.tarjeta {
+    background-color: #f1d0a5;
+    border: 2px solid rgb(134, 93, 45);
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.tabla-reserva {
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-self: center;
+    border: 1px solid black;
+}
+
+:root {
+    --first-column-width: 28%;
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: var(--first-column-width) 1fr;
+    align-items: center;
+}
+
+.table-body {
+    display: grid;
+    grid-template-columns: repeat(2, calc(var(--first-column-width)/2)) repeat(9, 1fr);
+    align-items: center;
+}
+
+.table-fila {
+    display: grid;
+    grid-column: 1 / -1;
+}
+
+.table-footer {
+    display: grid;
+    grid-template-columns: var(--first-column-width) repeat(9, 1fr);
+    align-items: center;
+
+}
+
+.tabla-reserva span {
+    font-weight: bold;
+    border: 1px solid black;
+    padding: 2px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.oculto{
+    border: 1px solid black;
+    user-select: none;
+    color:transparent;
+}
+
+.rowspan { 
+    user-select: none;
+    color:transparent;
+}
+
+#boton-menos1,
+#boton-mas1 {
+    border-bottom: none;
+    border-top: none;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
+
+#boton-menos1-medio,
+#boton-mas1-medio {
+    user-select: all;
+    color:black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-top: 0px;
+    border-bottom: 0px;
+}
+
+/* ------------------- */
+
+.ejercicio15 {
+    text-align: center;
+    font-size: 12px;
+    color: black;
+    overflow-x: auto; /* Hace que la barra de desplazamiento horizontal aparezca cuando la tabla sea más ancha que el contenedor */
+    overflow-y: auto; /* Hace que la barra de desplazamiento vertical aparezca cuando la tabla sea más alta que el contenedor */
+    max-width: 100%; /* Para asegurarse de que la tabla no se desborde en pantallas más pequeñas */
+    max-height: 100%; /* Para asegurarse de que la tabla no se desborde en pantallas más pequeñas */
+}
+
+.paginacion {
+    display: flex;
+    justify-content: center;
+    margin: 10px;
+    padding: 5px;
+}
+
+.paginas {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px;
+}
+
+/* -------------------*/
+
+fieldset {
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #f0ece5;
+}
+
+legend {
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+    border: 1px solid black;
+    background-color: #D7C0AE;
+    padding: 2px;
+    margin:5px;
+}
+
+fieldset p {
+    margin: 10px 0;
+}
+
+fieldset label {
+    display: inline-block;
+    width: 150px;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+fieldset input[type="text"],
+fieldset input[type="email"],
+fieldset input[type="password"],
+fieldset input[type="date"],
+fieldset input[type="file"] {
+    width: calc(100% - 170px);
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+.preferencias {
+    display: flex;
+    flex-direction: row;
+}
+
+.preferencias label {
+    font-weight: normal;
+    width: 100%;
+    padding-left: 10px;
+    padding-top: 2px;
+}
+
+.preferencias p {
+    font-weight: bold;
+}
+
+#idioma,
+#preferencia-habitacion {
+    display: flex;
+    flex-direction: column;
+}
+
+#idioma {
+    width: 35%;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#preferencia-habitacion {
+    flex:1;
+}
+
+.boton {
+    display: flex;
+    justify-content: center;
+}
+
+.boton input {
+    background-color: #D7C0AE;
+    color: black;
+    padding: 5px 20px;
+    font-weight: bold;
+    font-size: 16px;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.error {
+    color: red;
+}
+
+.datos-recibidos {
+    background-color: #6d7983;
+    color: white;
+    text-align: center;
+}
+
+/* ------------------- Media Queries ------------------- */
+
+@media (max-width: 900px) {
+    nav {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    nav ul {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .sesion-pantalla-reducida {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .sesion-pantalla-reducida a {
+        color: #6d7983;
+        font-weight: bold;
+    }
+
+    .sesion-pantalla-reducida a:hover {
+        text-decoration: underline;
+        text-decoration-color: #B7C4CF;
+        text-decoration-thickness: 4px;
+    }
+
+    .informacion-2nivel h2 {
+        font-size: 17px;
+        text-align: center;
+        text-decoration: underline;
+    }
+
+    .container {
+        flex-direction: column;
+    }
+
+    .zona-lateral {
+        flex-basis: 100%;
+        max-width: 100%;
+        margin-left: 0;
+        order: 1;
+    }
+
+    .inicio-sesion {
+        display: none;
+    }
+
+    .imagen {
+        width: 100%;
+    }
+
+    #bañera {
+        display: none;
+    }
+}
+
+@media (max-width: 650px) {
+    header {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .zona-lateral {
+        display: none;
+    }
+
+    .logo-image img {
+        width: 200px;
+    }
+
+    .contact-info img {
+        display: none;
+    }
+
+    .imagen {
+        width: 100%;
+    }
+    
+    .contacto-reducido {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .contacto-reducido img {
+        max-width: 200px;
+    }
+}
