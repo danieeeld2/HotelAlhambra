@@ -40,21 +40,19 @@ function HTML_header() {
 }
 
 // Función para generar el menú de navegación
-function HTML_nav() {
-    echo <<< HTML
-        <nav>
-            <ul>
-                <li><a href="index.php?pagina=inicio">Inicio</a></li>
-                <li><a href="index.php?pagina=habitaciones">Habitaciones</a></li>
-                <li><a href="index.php?pagina=servicios">Servicios</a></li>
-                <li><a href="index.php?pagina=registro">Registro</a></li>
-            </ul>
-            <ul class="sesion-pantalla-reducida">
-                <li><a href="">LogIn</a></li>
-            </ul>
-        </nav>
-    HTML;
-}
+function HTML_nav() { ?>
+    <nav>
+        <ul>
+            <li><a href="index.php?pagina=inicio">Inicio</a></li>
+            <li><a href="index.php?pagina=habitaciones">Habitaciones</a></li>
+            <li><a href="index.php?pagina=servicios">Servicios</a></li>
+            <li><a href="index.php?pagina=registro">Registro</a></li>
+        </ul>
+        <ul class="sesion-pantalla-reducida">
+            <li><a href=""><?php if(isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) echo "LogIn"; else echo "LogOut" ?> </a></li>
+        </ul>
+    </nav>
+<?php }
 
 // Función para iniciar el contenedor principal
 function HTML_main_container() {
@@ -64,27 +62,42 @@ function HTML_main_container() {
     HTML;
 }
 
+function HTML_formulario_login() { ?>
+    <form action="" method="post" novalidate>
+        <p>
+            <label for="idemail">Email:</label>
+            <input type="email" id="idemail" name="email-sesion" value=<?php if(isset($_SESSION["datos-login"]["email-sesion"])) echo  $_SESSION["datos-login"]["email-sesion"] ?>>
+        </p>
+        <?php if(isset($_SESSION["errores-login"]["email-sesion"])) echo $_SESSION["errores-login"]["email-sesion"] ?>
+        <p>
+            <label for="idpassword">Contraseña:</label>
+            <input type="password" id="idpassword" name="clave-sesion">
+        </p>
+        <?php if(isset($_SESSION["errores-login"]["clave-sesion"])) echo $_SESSION["errores-login"]["clave-sesion"] ?>
+        <?php if(isset($_SESSION["error-login"])) echo $_SESSION["error-login"] ?>
+        <div class="boton-lateral">
+            <input type="submit" value="Iniciar Sesión" name="iniciar-sesion" id="boton-enviar">
+        </div>
+    </form>
+<?php }
+
+function HTML_logout() { ?>
+    <p id="usuario-iniciado">Bienvenido, <?php echo $_SESSION["usuario"] ?>. Tu rol es <?php echo $_SESSION["rol"] ?></p>
+    <form action="" method="post" novalidate>
+        <div class="boton-lateral">
+            <div class="boton-logout">
+                <input type="submit" value="Cerrar Sesión" name="cerrar-sesion" id="boton-logout">
+            </div>
+        </div>
+    </form>
+<?php }
+
 // Función para generar el aside
 function HTML_aside() { ?>
     </div>
     <aside class="zona-lateral">
         <div class="inicio-sesion">
-            <form action="" method="post" novalidate>
-                <p>
-                    <label for="idemail">Email:</label>
-                    <input type="email" id="idemail" name="email-sesion" value=<?php if(isset($_SESSION["datos-login"]["email-sesion"])) echo  $_SESSION["datos-login"]["email-sesion"] ?>>
-                </p>
-                <?php if(isset($_SESSION["errores-login"]["email-sesion"])) echo $_SESSION["errores-login"]["email-sesion"] ?>
-                <p>
-                    <label for="idpassword">Contraseña:</label>
-                    <input type="password" id="idpassword" name="clave-sesion">
-                </p>
-                <?php if(isset($_SESSION["errores-login"]["clave-sesion"])) echo $_SESSION["errores-login"]["clave-sesion"] ?>
-                <?php if(isset($_SESSION["error-login"])) echo $_SESSION["error-login"] ?>
-                <div class="boton-lateral">
-                    <input type="submit" value="Iniciar Sesión" name="iniciar-sesion" id="boton-enviar">
-                </div>
-            </form>
+            <?php if(isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) HTML_formulario_login(); else if(isset($_SESSION["iniciado-sesion"]) && $_SESSION["iniciado-sesion"]) HTML_logout() ?>
         </div>
         <section class="informacion-2nivel">
             <h2>Información de Interés (Información de Segundo Nivel)</h2>

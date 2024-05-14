@@ -10,8 +10,11 @@ session_start();
 $conexion = conectar_bbdd();
 
 // Si no se ha iniciado sesión, se indica que el usuario esta como Anonimo
-if (isset($_SESSION["rol"])) {
+if (!isset($_SESSION["rol"])) {
     $_SESSION["rol"] = "Anonimo";
+}
+if (!isset($_SESSION["iniciado-sesion"])) {
+    $_SESSION["iniciado-sesion"] = false;
 }
 
 // Nos encontramos por defecto en la pagina de inicio
@@ -29,10 +32,21 @@ if (isset($_POST["iniciar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
         [$resultado, $usuario] = getUsuario($conexion, $_SESSION["datos-login"]["email-sesion"], $_SESSION["datos-login"]["clave-sesion"]);
         if($resultado){
             // Logear al usuario y cambiar rol
+            $_SESSION["rol"] = $usuario["rol"];
+            $_SESSION["usuario"] = $usuario["nombre"];
+            $_SESSION["iniciado-sesion"] = true;
         } else {
             $_SESSION["error-login"] = "<p class='error'>La contraseña es incorrecta</p>";
         }
     }
+}
+
+// Comrpobamos si se ha enviado el formulario de logout
+if (isset($_POST["cerrar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $_SESSION["rol"] = "Anonimo";
+    $_SESSION["iniciado-sesion"] = false;
+    unset($_SESSION["usuario"]);
+    unset($_SESSION["datos-login"]);
 }
 
 // Comprobamos si se ha enviado el formulario de registro
@@ -41,7 +55,9 @@ if (isset($_POST["enviar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
 }
 if (isset($_POST["confirmar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     $resultado = insertarUsuario($conexion, $_SESSION["datos-registro"]);
-    // Pendiente gestión del fallo
+    if($resultado) {
+        unset($_SESSION["datos-registro"]);
+    }
 }
 
 HTML_init();

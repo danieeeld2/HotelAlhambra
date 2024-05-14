@@ -300,7 +300,25 @@ footer a:hover {
 
 /* ------------------- */
 
+.boton-logout input {
+    background-color: #EEE3CB;
+    color: black; 
+    padding: 10px 20px; 
+    border: 0.5px solid black;
+    border-radius: 5px; 
+    cursor: pointer; 
+    font-size: 16px; 
+}
 
+.boton-logout input:hover {
+    background-color: #D7C0AE; 
+}
+
+#usuario-iniciado {
+    align-items: center;
+    color: black;
+    font-weight: bold;
+}
 
 /* -------------------*/
 
