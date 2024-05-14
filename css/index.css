@@ -135,6 +135,13 @@ footer a:hover {
     text-decoration-thickness: 4px;
 }
 
+.error-path h2 {
+    text-align: center; 
+    background-color: red; 
+    color: white;
+    padding: 20px; 
+    margin: auto;
+}
 /* ------------------- */
 
 .galeria {

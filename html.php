@@ -44,11 +44,10 @@ function HTML_nav() {
     echo <<< HTML
         <nav>
             <ul>
-                <li><a href="ej14-inicio.html">Inicio</a></li>
-                <li><a href="ej14-habitaciones.html">Habitaciones</a></li>
-                <li><a href="ej14-servicios.html">Servicios</a></li>
-                <li><a href="ej14-reservas.html">Reservas</a></li>
-                <li><a href="ej14-datos.html">Datos</a></li>
+                <li><a href="index.php?pagina=inicio">Inicio</a></li>
+                <li><a href="index.php?pagina=habitaciones">Habitaciones</a></li>
+                <li><a href="index.php?pagina=servicios">Servicios</a></li>
+                <li><a href="index.php?pagina=registro">Registro</a></li>
             </ul>
             <ul class="sesion-pantalla-reducida">
                 <li><a href="">LogIn</a></li>
@@ -115,7 +114,6 @@ function HTML_pagina_inicio() {
     echo <<< HTML
         <div>
             <main>
-                <!-- Breve descripción del hotel-->
                 <h2>Sobre Nosotros</h2>
                 <p>Hotel Alhambra ofrece una experiencia única en el corazón de Granada, situado en el pintoresco barrio del Albaicín con impresionantes vistas a la 
                     majestuosa Alhambra. Nuestro hotel combina la elegancia del diseño contemporáneo con el encanto tradicional andaluz. 
@@ -123,7 +121,6 @@ function HTML_pagina_inicio() {
                     personalizada que te hará sentir como en casa. Sumérgete en la historia y la cultura de Granada mientras te relajas en nuestro 
                     oasis de tranquilidad en la cima de la colina.</p>
             </main>
-            <!-- Galería de Imágenes del hotel-->
             <section>
                 <h2>Nuestro Espacio</h2>
                 <div class="galeria">
@@ -143,14 +140,158 @@ function HTML_pagina_inicio() {
             </section>
         </div>
         <section>
-            <!-- Creado de cara a la práctica final. Dejp la estructura, pero falta rellenar información -->
-            <!-- Información de primer nivel, con enlaces de interés a distintos recursos y eventos -->
             <h2>Nuestras Actividades</h2>
             <ul>
                 <li><a href="">Enlace a Evento 1</a></li>
                 <li><a href="">Recurso de Interés 1</a></li>
             </ul>
         </section>
+    HTML;
+}
+
+function HTML_pagina_habitaciones() {
+    echo <<< HTML
+        <main>
+            <section class="tarjeta">
+                <h2>Suite Alhambra</h2>
+                <section>
+                    <p>Nuestra Suite Alhambra es el epítome del lujo y la comodidad en Hotel Alhambra Hotel. 
+                        Diseñada para ofrecer una experiencia inolvidable, esta espaciosa suite combina elegancia contemporánea 
+                        con detalles inspirados en la rica historia de Granada. Disfruta de vistas panorámicas a la majestuosa 
+                        Alhambra desde tu propia terraza privada, donde podrás relajarte y maravillarte con la belleza de este emblemático monumento. 
+                        La Suite Alhambra cuenta con una amplia sala de estar, dormitorio independiente, baño lujoso y todas las comodidades 
+                        modernas para garantizar una estancia inigualable. Sumérgete en el lujo y la serenidad mientras 
+                        disfrutas de la experiencia única que solo nuestro hotel puede ofrecer.</p>
+                    <ul>
+                        <li>Capacidad: 2 adultos</li>
+                        <li>Camas: 1 cama king size</li>
+                        <li>Tamaño: 60 m²</li>
+                        <li>Vistas: Alhambra</li>
+                        <li>Desayuno incluido</li>
+                        <li>Wifi gratis</li>
+                        <li>TV de pantalla plana</li>
+                        <li>Minibar</li>
+                        <li>Caja fuerte</li>
+                        <li>Secador de pelo</li>
+                        <li>Albornoz y zapatillas</li>
+                        <li>Artículos de baño de lujo</li>
+                    </ul>
+                </section>
+                <section>
+                    <h2>Observa la Suite Alhambra</h2>
+                    <div class="galeria">
+                        <div class="imagen">
+                            <img src="img/hab-suite.jpg" alt="Habitacion Suite">
+                        </div>
+                        <div class="imagen">
+                            <img src="img/baño-suite.jpg" alt="Baño Suite">
+                        </div>
+                        <div class="imagen">
+                            <img src="img/terraza-suite.jpg" alt="Terraza Suite">
+                        </div>
+                    </div>
+                </section>
+            </section>
+            <section class="tarjeta">
+                <h2>Individual</h2>
+                <section>
+                    <p>Experimenta la serenidad y el confort en nuestra Habitación Individual en el Hotel Alhambra. 
+                        Diseñada para el viajero que valora la privacidad y la comodidad, esta acogedora habitación ofrece un 
+                        refugio tranquilo en el corazón de Granada. Decorada con un estilo elegante y funcional, la 
+                        Habitación Individual está equipada con todas las comodidades modernas para garantizar una estancia confortable. 
+                        Desde su ventana, podrás disfrutar de vistas a los encantadores callejones del Albaicín o al tranquilo patio andaluz del hotel. 
+                        Sumérgete en la auténtica atmósfera de Granada mientras te relajas en tu propio espacio privado en el Hotel Alhambra.</p>
+                    <ul>
+                        <li>Capacidad: 1 adulto</li>
+                        <li>Camas: 1 cama individual</li>
+                        <li>Tamaño: 20 m²</li>
+                        <li>Vistas: Patio interior</li>
+                        <li>Desayuno incluido</li>
+                        <li>Wifi gratis</li>
+                        <li>TV de pantalla plana</li>
+                        <li>Minibar</li>
+                        <li>Caja fuerte</li>
+                        <li>Secador de pelo</li>
+                        <li>Artículos de baño de lujo</li>
+                    </ul>
+                </section>
+                <section>
+                    <h2>Observa la Habitación Individual</h2>
+                    <div class="galeria">
+                        <div class="imagen">
+                            <img src="img/hab-individual.png" alt="Habitacion Individual">
+                        </div>
+                        <div class="imagen" id="bañera">
+                            <img src="img/baño-individual.png" alt="Baño Individual">
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </main>
+    HTML;
+}
+
+function HTML_pagina_servicios() {
+    echo <<< HTML
+        <main>
+            <section class="tarjeta">
+                <h2>Piscina</h2>
+                <div>
+                    <p>
+                        Sumérgete en un oasis de relajación y frescura en nuestra exquisita piscina del Hotel Alhambra. 
+                        Rodeada de exuberante vegetación y con vistas panorámicas a la icónica Alhambra, nuestra piscina 
+                        ofrece el escenario perfecto para escapar del bullicio de la ciudad y disfrutar de momentos de paz y tranquilidad. 
+                        Da un refrescante chapuzón en las aguas cristalinas mientras disfrutas del cálido sol andaluz o relájate 
+                        en una de nuestras cómodas tumbonas con una refrescante bebida en la mano. Ya sea para un revitalizante baño matutino 
+                        o para disfrutar de una noche bajo las estrellas, nuestra piscina te invita a sumergirte en una experiencia de 
+                        verdadero lujo y bienestar en pleno corazón de Granada
+                    </p>
+                    <ul>
+                        <li>Horario de 9:00-19:00</li>
+                        <li>Servicio de Socorrismo</li>
+                        <li>Prohibido hacer ruido</li>
+                        <li>Los niños deben estar con vigilancia de los padres</li>
+                    </ul>
+                </div>
+                <section>
+                    <h2>Nuestra Piscina</h2>
+                    <div class="galeria">
+                        <div class="imagen">
+                            <img src="img/piscina.jpg" alt="Piscina">
+                        </div>
+                    </div>
+                </section>
+            </section>
+            <section class="tarjeta">
+                <h2>Buffet</h2>
+                <div>
+                    <p>
+                        Deléitate con una experiencia culinaria excepcional en nuestro buffet del Hotel Alhambra. 
+                        Con una amplia variedad de platos tanto locales como internacionales, nuestro buffet 
+                        ofrece una fusión de sabores exquisitos que satisfarán incluso a los paladares más exigentes. Desde 
+                        auténticas especialidades andaluzas hasta delicias internacionales cuidadosamente preparadas, 
+                        cada plato está elaborado con ingredientes frescos y de la más alta calidad. 
+                        Disfruta de una selección de ensaladas frescas, entrantes tentadores, 
+                        platos principales gourmet y exquisitos postres, todo presentado en un ambiente acogedor y elegante. 
+                        Ya sea para un desayuno energético, un almuerzo ligero o una cena indulgente, nuestro 
+                        buffet es el lugar perfecto para disfrutar de una experiencia gastronómica inolvidable en el corazón de Granada.
+                    </p>
+                    <ul>
+                        <li>Desayuno</li>
+                        <li>Comida</li>
+                        <li>Cena</li>
+                        <li>Snacks</li>
+                    </ul>
+                </div>
+                <section>
+                    <h2>Nuestro Buffet</h2>
+                    <div class="galeria">
+                        <div class="imagen">
+                            <img src="img/buffet.jpg" alt="Buffet">
+                        </div>
+                </section>
+            </section>
+        </main>
     HTML;
 }
 
@@ -218,4 +359,17 @@ function HTML_form_registro() { ?>
         </section>
     </main>
 <?php }
+?>
+
+<?php
+function HTML_error_path(){
+    echo <<< HTML
+        <main>
+            <div class="error-path">
+                <h2>La página solicitada no existe</h2>
+            </div>
+        </main>
+    HTML;
+}
+
 ?>
