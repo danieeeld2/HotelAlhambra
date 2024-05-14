@@ -108,6 +108,73 @@ function HTML_footer() {
         </footer>
     HTML;
 }
+
+// *****************************************************
+
+function HTML_form_registro() { ?>
+    <main>
+        <section class="registro-usuarios">
+            <h2>Registro de Usuarios</h2>
+            <?php if(isset($_SESSION["datos-registro"]["correcto"]))  echo "<h2 class='datos-recibidos'>Los datos se han recibido correctamente</h2>" ?>
+            <?php if(isset($_SESSION["datos-registro"]["correcto"])) $disable = "disabled"; else $disable = ""; ?>
+            <form action="" method="post" novalidate>
+                <fieldset>
+                    <legend>Datos del Usuario</legend>
+                    <p>
+                        <label for="idnombre">Nombre:</label>
+                        <input type="text" id="idnombre" name="nombre" placeholder="(Obligatorio)" value=<?php if(isset($_SESSION["datos-registro"]["nombre"])) echo $_SESSION["datos-registro"]["nombre"] ?> <?php echo $disable ?>>
+                    </p>
+                    <?php if(isset($_SESSION["errores-registro"]["nombre"])) echo $_SESSION["errores-registro"]["nombre"] ?>
+                    <p>
+                        <label for="idapellidos">Apellidos:</label>
+                        <input type="text" id="idapellidos" name="apellidos" placeholder="(Obligatorio)" value=<?php if(isset($_SESSION["datos-registro"]["apellidos"])) echo $_SESSION["datos-registro"]["apellidos"] ?> <?php echo $disable ?>>
+                    </p>
+                    <?php if(isset($_SESSION["errores-registro"]["apellidos"])) echo $_SESSION["errores-registro"]["apellidos"] ?>
+                    <p>
+                        <label for="iddni">DNI:</label>
+                        <input type="text" id="iddni" name="dni" placeholder="(Solo DNIs Españoles)" value=<?php if(isset($_SESSION["datos-registro"]["dni"])) echo $_SESSION["datos-registro"]["dni"] ?> <?php echo $disable ?>>
+                    </p>
+                    <?php if(isset($_SESSION["errores-registro"]["dni"])) echo $_SESSION["errores-registro"]["dni"] ?>
+                </fieldset>
+                <fieldset>
+                    <legend>Datos de la Cuenta</legend>
+                    <p>
+                        <label for="idemail">Email:</label>
+                        <input type="email" id="idemail" name="email" placeholder="(Obligatorio)" value=<?php if(isset($_SESSION["datos-registro"]["email"])) echo $_SESSION["datos-registro"]["email"] ?> <?php echo $disable ?>>
+                    </p>
+                    <?php if(isset($_SESSION["errores-registro"]["email"])) echo $_SESSION["errores-registro"]["email"] ?>
+                    <p>
+                        <label for="idpassword">Contraseña:</label>
+                        <input type="password" id="idpassword" name="clave" placeholder="(Mínimo 5 caracteres)" value=<?php if(isset($_SESSION["datos-registro"]["clave"])) echo $_SESSION["datos-registro"]["clave"] ?> <?php echo $disable ?>>
+                    </p>
+                    <?php if(isset($_SESSION["errores-registro"]["clave"])) echo $_SESSION["errores-registro"]["clave"] ?>
+                    <p>
+                        <label for="idpassword2">Repetir Contraseña:</label>
+                        <input type="password" id="idpassword2" name="clave-repetida" placeholder="(Repetir contraseña)" value=<?php if(isset($_SESSION["datos-registro"]["clave-repetida"])) echo $_SESSION["datos-registro"]["clave-repetida"] ?> <?php echo $disable ?>>
+                    </p>
+                    <?php if(isset($_SESSION["errores-registro"]["clave-repetida"])) echo $_SESSION["errores-registro"]["clave-repetida"] ?>
+                </fieldset>
+                <fieldset>
+                    <legend>Datos de Pago</legend>
+                    <p>
+                        <label for="idtarjeta">Tarjeta de Crédito:</label>
+                        <input type="text" id="idtarjeta" name="tarjeta" placeholder="(16 dígitos)" value=<?php if(isset($_SESSION["datos-registro"]["tarjeta"])) echo $_SESSION["datos-registro"]["tarjeta"] ?> <?php echo $disable ?>>
+                    </p>
+                    <?php if(isset($_SESSION["errores-registro"]["tarjeta"])) echo $_SESSION["errores-registro"]["tarjeta"] ?>
+                </fieldset>
+                <div class="boton">
+                    <?php 
+                    if(isset($_SESSION["datos-registro"]["correcto"])){
+                        echo "<input type='submit' value='Confirmar Datos' name='confirmar-registro' id='boton-enviar'>";
+                    } else {
+                        echo "<input type='submit' value='Enviar Datos' name='enviar-registro' id='boton-enviar'>";
+                    }
+                    ?>
+                </div>
+            </form>
+        </section>
+    </main>
+<?php }
 ?>
 
         
