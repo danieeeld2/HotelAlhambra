@@ -63,8 +63,15 @@ if (isset($_POST["confirmar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST")
 // Comprobamos si se ha enviado el formulario de añadir habitaciones
 if(isset($_POST["enviar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     [$_SESSION["errores-habitacion"], $_SESSION["datos-habitacion"]] = validarDatosHabitaciones($conexion);
+    if(isset($_SESSION["modificar-habitacion"])) unset($_SESSION["modificar-habitacion"]);
+    if(isset($_SESSION["modificar-imagen-habitacion"])) unset($_SESSION["modificar-imagen-habitacion"]);
 }
 if(isset($_POST["confirmar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    if(isset($_SESSION["modificar-habitacion"])){
+        $habitacion = getHabitacionID($conexion, $_SESSION["id-modificar"]);
+        $resultado = borrarHabitacion($conexion, $_SESSION["id-modificar"]);
+        $resultado_fotos = borrarFotosHabitacion($conexion, $habitacion[1]["Habitacion"]);
+    }
     $resultado = insertarHabitacion($conexion, $_SESSION["datos-habitacion"]);
     if(!empty($_SESSION["datos-habitacion"]["fotos"]) && $resultado) {
         $fotos = $_SESSION["datos-habitacion"]["fotos"];
@@ -73,16 +80,82 @@ if(isset($_POST["confirmar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST"
         }
     }
     if($resultado) {
-        unset($_SESSION["datos-habitacion"]);
+        if(isset($_SESSION["datos-habitacion"])) unset($_SESSION["datos-habitacion"]);
     }
+    if(isset($_SESSION["modificar-habitacion"])) unset($_SESSION["modificar-habitacion"]);
+    if(isset($_SESSION["modificar-imagen-habitacion"])) unset($_SESSION["modificar-imagen-habitacion"]);
 }
 // Comprobamos si se ha enviado el formulario de eliminar habitaciones
 if(isset($_POST["borrar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    if(isset($_SESSION["modificar-habitacion"])) unset($_SESSION["modificar-habitacion"]);
+    if(isset($_SESSION["modificar-imagen-habitacion"])) unset($_SESSION["modificar-imagen-habitacion"]);
+    if(isset($_SESSION["datos-habitacion"])) unset($_SESSION["datos-habitacion"]);
     $habitacion = getHabitacionID($conexion, $_POST["id-habitacion"]);
     $resultado = borrarHabitacion($conexion, $_POST["id-habitacion"]);
     if($resultado) { // Borrar las fotos de la habitación en caso de que se haya eliminado correctamente
         $resultado_fotos = borrarFotosHabitacion($conexion, $habitacion[1]["Habitacion"]);
     }
+}
+// Comprobamos si se ha enviado el formulario de editar habitaciones (No gestiona la modificación de imágenes, eso va en un form a parte)
+if(isset($_POST["modificar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    if(isset($_SESSION["datos-habitacion"])) unset($_SESSION["datos-habitacion"]);
+    $habitacion = getHabitacionID($conexion, $_POST["id-habitacion"]);
+    // Bindeamos los datos de la habitación a la variable de sesión
+    $_SESSION["datos-habitacion"]["habitacion"] = $habitacion[1]["Habitacion"];
+    $_SESSION["datos-habitacion"]["capacidad"] = $habitacion[1]["Capacidad"];
+    $_SESSION["datos-habitacion"]["precio"] = convertirADecimal($habitacion[1]["Precio"]);
+    $_SESSION["datos-habitacion"]["descripcion"] = $habitacion[1]["Descripcion"];
+    // Obtenemos las fotos de la habitación
+    [$resultado, $fotos] = getFotosHabitacion($conexion, $habitacion[1]["Habitacion"]);
+    // Convertir a array de fotos
+    if($resultado){
+        foreach($fotos as $foto){
+            $imagen = $foto["Imagen"];
+            $_SESSION["datos-habitacion"]["fotos"][] = $imagen;
+        }
+    }
+    $_SESSION["modificar-habitacion"] = true;
+    if(isset($_SESSION["modificar-imagen-habitacion"])) unset($_SESSION["modificar-imagen-habitacion"]);
+    if(isset($_POST["id-habitacion"])) $_SESSION["id-modificar"] = $_POST["id-habitacion"];
+}
+if(isset($_POST["enviar-modificar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST"){
+    [$_SESSION["errores-habitacion"], $_SESSION["datos-habitacion"]] = validarDatosHabitaciones($conexion);
+}
+// Comprobamos si se ha mandado el formulario de edición de imagenes
+if(isset($_POST["modificar-imagenes-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    if(isset($_POST["id-habitacion"])) $_SESSION["id-modificar"] = $_POST["id-habitacion"];
+    if(isset($_SESSION["datos-habitacion"])) unset($_SESSION["datos-habitacion"]);
+    $habitacion = getHabitacionID($conexion, $_SESSION["id-modificar"]);
+    // Bindeamos los datos de la habitación a la variable de sesión
+    $_SESSION["datos-habitacion"]["habitacion"] = $habitacion[1]["Habitacion"];
+    // Obtenemos las fotos de la habitación
+    [$resultado, $_SESSION["fotos"]] = getFotosHabitacion($conexion, $habitacion[1]["Habitacion"]);
+    $_SESSION["modificar-imagen-habitacion"] = true;
+    if(isset($_SESSION["modificar-habitacion"])) unset($_SESSION["modificar-habitacion"]);
+}
+// Procesar subida de fotos
+if(isset($_POST["enviar-fotos"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $habitacion = getHabitacionID($conexion, $_SESSION["id-modificar"]);
+    $fotos = validarFotos();
+    if($fotos) {
+        foreach($fotos as $foto) {
+            $resultado = insertarFotoHabitacion($conexion, $foto, $habitacion[1]["Habitacion"]);
+        }
+    }
+    [$resultado, $_SESSION["fotos"]] = getFotosHabitacion($conexion, $habitacion[1]["Habitacion"]);
+}
+// Comprobamos si se ha enviado el formulario de eliminar fotos
+if(isset($_POST["borrar-foto"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $resultado = borrarFotoID($conexion, $_POST["id-foto"]);
+    // Cogemos el nombre de la haiotacion a la que pertenece la foto
+    [$resultado, $habitacion] = getHabitacionID($conexion, $_SESSION["id-modificar"]);
+    [$resultado, $_SESSION["fotos"]] = getFotosHabitacion($conexion, $habitacion["Habitacion"]);
+}
+// Comprobamos si se solicita salir del modo edición de imagenes
+if(isset($_POST["salir-edicion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    if(isset($_SESSION["modificar-imagen-habitacion"])) unset($_SESSION["modificar-imagen-habitacion"]);
+    if(isset($_SESSION["fotos"])) unset($_SESSION["fotos"]);
+    if(isset($_SESSION["datos-habitacion"])) unset($_SESSION["datos-habitacion"]);
 }
 
 
@@ -117,7 +190,12 @@ if(isset($_GET["pagina"])) {
                 HTML_error_permisos();
             } else {
                 HTML_tabla_Habitaciones($conexion);
-                HTML_form_habitaciones();
+                if(isset($_SESSION["modificar-imagen-habitacion"])){
+                    HTML_editar_fotos_habitacion();
+                    HTML_salir_edicion();
+                } else {
+                    HTML_form_habitaciones();
+                }
             }
             break;
         default:

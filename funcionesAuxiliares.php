@@ -54,5 +54,45 @@ function limpiarSesionFormularios(){
     if(isset($_SESSION["datos-habitacion"])){
         unset($_SESSION["datos-habitacion"]);
     }
+    if(isset($_SESSION["modificar-habitacion"])){
+        unset($_SESSION["modificar-habitacion"]);
+    }
+    if(isset($_SESSION["modificar-imagen-habitacion"])){
+        unset($_SESSION["modificar-imagen-habitacion"]);
+    }
+    if(isset($_SESSION["fotos"])){
+        unset($_SESSION["fotos"]);
+    }
+}
+
+// Función para asegurarse de que el número tenga un formato decimal adecuado
+function convertirADecimal($numero) {
+    // Verificar si el número tiene un punto decimal
+    if (strpos($numero, '.') === false) {
+        // Si no tiene punto decimal, agregar ".0"
+        $numero .= '.0';
+    }
+    // Convertir el número a float y devolverlo
+    return $numero;
+}
+
+// Funcion auxiliar para comprobar que un archivo es una imagen
+function validarFotos() {
+    if(!empty($_FILES['fotos']['name'][0])) {
+        $datos = array();
+        $allowed_types = array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF);
+        foreach($_FILES['fotos']['tmp_name'] as $key => $tmp_name) {
+            $file_type = exif_imagetype($tmp_name);
+            if(!in_array($file_type, $allowed_types)) {
+                break;
+            } else {
+                // Leer la imagen en formato base64
+                $imagen_base64 = base64_encode(file_get_contents($tmp_name));
+                // Añadir la imagen al array de datos
+                $datos[] = $imagen_base64;
+            }
+        }
+        return $datos;
+    }
 }
 ?>

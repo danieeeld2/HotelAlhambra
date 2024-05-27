@@ -1,6 +1,7 @@
-<?php 
+<?php
 // Función para iniciar el documento HTML
-function HTML_init() {
+function HTML_init()
+{
     echo <<< HTML
         <!DOCTYPE html>
         <html lang="es">
@@ -10,17 +11,18 @@ function HTML_init() {
             <title>Hotel Alhambra</title>
             <link rel="stylesheet" href="./css/index.css">
         HTML;
-            if(isset($_GET["pagina"]) && $_GET["pagina"] == "gestion-habitaciones") {
-                echo "<script src='previsualizacion.js'></script>";
-            }
-        echo <<< HTML
+    if (isset($_GET["pagina"]) && $_GET["pagina"] == "gestion-habitaciones") {
+        echo "<script src='previsualizacion.js'></script>";
+    }
+    echo <<< HTML
         </head>
         <body>
     HTML;
 }
 
 // Función para cerrar el documento HTML
-function HTML_close() {
+function HTML_close()
+{
     echo <<< HTML
         </body>
         </html>
@@ -28,7 +30,8 @@ function HTML_close() {
 }
 
 // Función para generar el header
-function HTML_header() {
+function HTML_header()
+{
     echo <<< HTML
         <header>
             <div class="logo">
@@ -45,49 +48,54 @@ function HTML_header() {
 }
 
 // Función para generar el menú de navegación
-function HTML_nav() { ?>
+function HTML_nav()
+{ ?>
     <nav>
         <ul>
             <li><a href="index.php?pagina=inicio">Inicio</a></li>
             <li><a href="index.php?pagina=habitaciones">Habitaciones</a></li>
             <li><a href="index.php?pagina=servicios">Servicios</a></li>
-            <?php if(!$_SESSION["iniciado-sesion"]) echo "<li><a href='index.php?pagina=registro'>Registro</a></li>" ?>
-            <?php if($_SESSION["rol"] == "Recepcionista") echo "<li><a href='index.php?pagina=gestion-habitaciones'>Gestión Habitaciones</a></li>" ?>
+            <?php if (!$_SESSION["iniciado-sesion"]) echo "<li><a href='index.php?pagina=registro'>Registro</a></li>" ?>
+            <?php if ($_SESSION["rol"] == "Recepcionista") echo "<li><a href='index.php?pagina=gestion-habitaciones'>Gestión Habitaciones</a></li>" ?>
         </ul>
         <ul class="sesion-pantalla-reducida">
-            <li><a href=""><?php if(isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) echo "LogIn"; else echo "LogOut" ?> </a></li>
+            <li><a href=""><?php if (isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) echo "LogIn";
+                            else echo "LogOut" ?> </a></li>
         </ul>
     </nav>
 <?php }
 
 // Función para iniciar el contenedor principal
-function HTML_main_container() {
+function HTML_main_container()
+{
     echo <<< HTML
         <div class="container">
         <div class="main">
     HTML;
 }
 
-function HTML_formulario_login() { ?>
+function HTML_formulario_login()
+{ ?>
     <form action="" method="post" novalidate>
         <p>
             <label for="idemail">Email:</label>
-            <input type="email" id="idemail" name="email-sesion" value=<?php if(isset($_SESSION["datos-login"]["email-sesion"])) echo  $_SESSION["datos-login"]["email-sesion"] ?>>
+            <input type="email" id="idemail" name="email-sesion" value=<?php if (isset($_SESSION["datos-login"]["email-sesion"])) echo  $_SESSION["datos-login"]["email-sesion"] ?>>
         </p>
-        <?php if(isset($_SESSION["errores-login"]["email-sesion"])) echo $_SESSION["errores-login"]["email-sesion"] ?>
+        <?php if (isset($_SESSION["errores-login"]["email-sesion"])) echo $_SESSION["errores-login"]["email-sesion"] ?>
         <p>
             <label for="idpassword">Contraseña:</label>
             <input type="password" id="idpassword" name="clave-sesion">
         </p>
-        <?php if(isset($_SESSION["errores-login"]["clave-sesion"])) echo $_SESSION["errores-login"]["clave-sesion"] ?>
-        <?php if(isset($_SESSION["error-login"])) echo $_SESSION["error-login"] ?>
+        <?php if (isset($_SESSION["errores-login"]["clave-sesion"])) echo $_SESSION["errores-login"]["clave-sesion"] ?>
+        <?php if (isset($_SESSION["error-login"])) echo $_SESSION["error-login"] ?>
         <div class="boton-lateral">
             <input type="submit" value="Iniciar Sesión" name="iniciar-sesion" id="boton-enviar">
         </div>
     </form>
 <?php }
 
-function HTML_logout() { ?>
+function HTML_logout()
+{ ?>
     <p id="usuario-iniciado">Bienvenido, <?php echo $_SESSION["usuario"] ?>. Tu rol es <?php echo $_SESSION["rol"] ?></p>
     <form action="" method="post" novalidate>
         <div class="boton-lateral">
@@ -99,11 +107,13 @@ function HTML_logout() { ?>
 <?php }
 
 // Función para generar el aside
-function HTML_aside() { ?>
+function HTML_aside()
+{ ?>
     </div>
     <aside class="zona-lateral">
         <div class="inicio-sesion">
-            <?php if(isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) HTML_formulario_login(); else if(isset($_SESSION["iniciado-sesion"]) && $_SESSION["iniciado-sesion"]) HTML_logout() ?>
+            <?php if (isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) HTML_formulario_login();
+            else if (isset($_SESSION["iniciado-sesion"]) && $_SESSION["iniciado-sesion"]) HTML_logout() ?>
         </div>
         <section class="informacion-2nivel">
             <h2>Información de Interés (Información de Segundo Nivel)</h2>
@@ -113,11 +123,12 @@ function HTML_aside() { ?>
             </ul>
         </section>
     </aside>
-</div>
-<?php } 
+    </div>
+<?php }
 
 // Función para generar el footer
-function HTML_footer() {
+function HTML_footer()
+{
     echo <<< HTML
         <footer>
             <div class="fila">
@@ -142,7 +153,8 @@ function HTML_footer() {
 
 // *****************************************************
 
-function HTML_pagina_inicio() {
+function HTML_pagina_inicio()
+{
     echo <<< HTML
         <div>
             <main>
@@ -181,14 +193,15 @@ function HTML_pagina_inicio() {
     HTML;
 }
 
-function HTML_pagina_habitaciones($conexion) { 
+function HTML_pagina_habitaciones($conexion)
+{
     $habitaciones = getHabitaciones($conexion);
-    if($habitaciones[0]) {
+    if ($habitaciones[0]) {
         $habitaciones = $habitaciones[1];
         echo <<< HTML
             <main>
         HTML;
-        while($fila = $habitaciones->fetch_assoc()) {
+        while ($fila = $habitaciones->fetch_assoc()) {
             [$resultado, $fotografias] = getFotosHabitacion($conexion, $fila["Habitacion"]);
             echo <<< HTML
                 <section class="tarjeta">
@@ -204,9 +217,9 @@ function HTML_pagina_habitaciones($conexion) {
                         <h2>Observa la Habitación</h2>
                         <div class="galeria">
             HTML;
-            if($resultado) {
-                if(!empty($fotografias)) {
-                    foreach($fotografias as $foto) {
+            if ($resultado) {
+                if (!empty($fotografias)) {
+                    foreach ($fotografias as $foto) {
                         $imagen = $foto["Imagen"];
                         echo "<div class='imagen'>";
                         echo "<img src='data:image/jpeg;base64,$imagen'>";
@@ -214,15 +227,19 @@ function HTML_pagina_habitaciones($conexion) {
                     }
                 }
             }
+            echo "</div>";
+            echo "</section>";
+            echo "</section>";
         }
-        if($habitaciones->num_rows == 0) {
+        if ($habitaciones->num_rows == 0) {
             echo "<h2>No hay habitaciones registradas</h2>";
         }
         echo "</main>";
-    } 
+    }
 }
 
-function HTML_pagina_servicios() {
+function HTML_pagina_servicios()
+{
     echo <<< HTML
         <main>
             <section class="tarjeta">
@@ -286,60 +303,62 @@ function HTML_pagina_servicios() {
     HTML;
 }
 
-function HTML_form_registro() { ?>
+function HTML_form_registro()
+{ ?>
     <main>
         <section class="registro-usuarios">
             <h2>Registro de Usuarios</h2>
-            <?php if(isset($_SESSION["datos-registro"]["correcto"]))  echo "<h2 class='datos-recibidos'>Los datos se han recibido correctamente</h2>" ?>
-            <?php if(isset($_SESSION["datos-registro"]["correcto"])) $disable = "disabled"; else $disable = ""; ?>
+            <?php if (isset($_SESSION["datos-registro"]["correcto"]))  echo "<h2 class='datos-recibidos'>Los datos se han recibido correctamente</h2>" ?>
+            <?php if (isset($_SESSION["datos-registro"]["correcto"])) $disable = "disabled";
+            else $disable = ""; ?>
             <form action="" method="post" novalidate>
                 <fieldset>
                     <legend>Datos del Usuario</legend>
                     <p>
                         <label for="idnombre">Nombre:</label>
-                        <input type="text" id="idnombre" name="nombre" placeholder="(Obligatorio)" value=<?php if(isset($_SESSION["datos-registro"]["nombre"])) echo $_SESSION["datos-registro"]["nombre"] ?> <?php echo $disable ?>>
+                        <input type="text" id="idnombre" name="nombre" placeholder="(Obligatorio)" value=<?php if (isset($_SESSION["datos-registro"]["nombre"])) echo $_SESSION["datos-registro"]["nombre"] ?> <?php echo $disable ?>>
                     </p>
-                    <?php if(isset($_SESSION["errores-registro"]["nombre"])) echo $_SESSION["errores-registro"]["nombre"] ?>
+                    <?php if (isset($_SESSION["errores-registro"]["nombre"])) echo $_SESSION["errores-registro"]["nombre"] ?>
                     <p>
                         <label for="idapellidos">Apellidos:</label>
-                        <input type="text" id="idapellidos" name="apellidos" placeholder="(Obligatorio)" value=<?php if(isset($_SESSION["datos-registro"]["apellidos"])) echo $_SESSION["datos-registro"]["apellidos"] ?> <?php echo $disable ?>>
+                        <input type="text" id="idapellidos" name="apellidos" placeholder="(Obligatorio)" value=<?php if (isset($_SESSION["datos-registro"]["apellidos"])) echo $_SESSION["datos-registro"]["apellidos"] ?> <?php echo $disable ?>>
                     </p>
-                    <?php if(isset($_SESSION["errores-registro"]["apellidos"])) echo $_SESSION["errores-registro"]["apellidos"] ?>
+                    <?php if (isset($_SESSION["errores-registro"]["apellidos"])) echo $_SESSION["errores-registro"]["apellidos"] ?>
                     <p>
                         <label for="iddni">DNI:</label>
-                        <input type="text" id="iddni" name="dni" placeholder="(Solo DNIs Españoles)" value=<?php if(isset($_SESSION["datos-registro"]["dni"])) echo $_SESSION["datos-registro"]["dni"] ?> <?php echo $disable ?>>
+                        <input type="text" id="iddni" name="dni" placeholder="(Solo DNIs Españoles)" value=<?php if (isset($_SESSION["datos-registro"]["dni"])) echo $_SESSION["datos-registro"]["dni"] ?> <?php echo $disable ?>>
                     </p>
-                    <?php if(isset($_SESSION["errores-registro"]["dni"])) echo $_SESSION["errores-registro"]["dni"] ?>
+                    <?php if (isset($_SESSION["errores-registro"]["dni"])) echo $_SESSION["errores-registro"]["dni"] ?>
                 </fieldset>
                 <fieldset>
                     <legend>Datos de la Cuenta</legend>
                     <p>
                         <label for="idemail">Email:</label>
-                        <input type="email" id="idemail" name="email" placeholder="(Obligatorio)" value=<?php if(isset($_SESSION["datos-registro"]["email"])) echo $_SESSION["datos-registro"]["email"] ?> <?php echo $disable ?>>
+                        <input type="email" id="idemail" name="email" placeholder="(Obligatorio)" value=<?php if (isset($_SESSION["datos-registro"]["email"])) echo $_SESSION["datos-registro"]["email"] ?> <?php echo $disable ?>>
                     </p>
-                    <?php if(isset($_SESSION["errores-registro"]["email"])) echo $_SESSION["errores-registro"]["email"] ?>
+                    <?php if (isset($_SESSION["errores-registro"]["email"])) echo $_SESSION["errores-registro"]["email"] ?>
                     <p>
                         <label for="idpassword">Contraseña:</label>
-                        <input type="password" id="idpassword" name="clave" placeholder="(Mínimo 5 caracteres)" value=<?php if(isset($_SESSION["datos-registro"]["clave"])) echo $_SESSION["datos-registro"]["clave"] ?> <?php echo $disable ?>>
+                        <input type="password" id="idpassword" name="clave" placeholder="(Mínimo 5 caracteres)" value=<?php if (isset($_SESSION["datos-registro"]["clave"])) echo $_SESSION["datos-registro"]["clave"] ?> <?php echo $disable ?>>
                     </p>
-                    <?php if(isset($_SESSION["errores-registro"]["clave"])) echo $_SESSION["errores-registro"]["clave"] ?>
+                    <?php if (isset($_SESSION["errores-registro"]["clave"])) echo $_SESSION["errores-registro"]["clave"] ?>
                     <p>
                         <label for="idpassword2">Repetir Contraseña:</label>
-                        <input type="password" id="idpassword2" name="clave-repetida" placeholder="(Repetir contraseña)" value=<?php if(isset($_SESSION["datos-registro"]["clave-repetida"])) echo $_SESSION["datos-registro"]["clave-repetida"] ?> <?php echo $disable ?>>
+                        <input type="password" id="idpassword2" name="clave-repetida" placeholder="(Repetir contraseña)" value=<?php if (isset($_SESSION["datos-registro"]["clave-repetida"])) echo $_SESSION["datos-registro"]["clave-repetida"] ?> <?php echo $disable ?>>
                     </p>
-                    <?php if(isset($_SESSION["errores-registro"]["clave-repetida"])) echo $_SESSION["errores-registro"]["clave-repetida"] ?>
+                    <?php if (isset($_SESSION["errores-registro"]["clave-repetida"])) echo $_SESSION["errores-registro"]["clave-repetida"] ?>
                 </fieldset>
                 <fieldset>
                     <legend>Datos de Pago</legend>
                     <p>
                         <label for="idtarjeta">Tarjeta de Crédito:</label>
-                        <input type="text" id="idtarjeta" name="tarjeta" placeholder="(16 dígitos)" value=<?php if(isset($_SESSION["datos-registro"]["tarjeta"])) echo $_SESSION["datos-registro"]["tarjeta"] ?> <?php echo $disable ?>>
+                        <input type="text" id="idtarjeta" name="tarjeta" placeholder="(16 dígitos)" value=<?php if (isset($_SESSION["datos-registro"]["tarjeta"])) echo $_SESSION["datos-registro"]["tarjeta"] ?> <?php echo $disable ?>>
                     </p>
-                    <?php if(isset($_SESSION["errores-registro"]["tarjeta"])) echo $_SESSION["errores-registro"]["tarjeta"] ?>
+                    <?php if (isset($_SESSION["errores-registro"]["tarjeta"])) echo $_SESSION["errores-registro"]["tarjeta"] ?>
                 </fieldset>
                 <div class="boton">
-                    <?php 
-                    if(isset($_SESSION["datos-registro"]["correcto"])){
+                    <?php
+                    if (isset($_SESSION["datos-registro"]["correcto"])) {
                         echo "<input type='submit' value='Confirmar Datos' name='confirmar-registro' id='boton-enviar'>";
                     } else {
                         echo "<input type='submit' value='Enviar Datos' name='enviar-registro' id='boton-enviar'>";
@@ -353,7 +372,8 @@ function HTML_form_registro() { ?>
 ?>
 
 <?php
-function HTML_error_path(){
+function HTML_error_path()
+{
     echo <<< HTML
         <main>
             <div class="error-path">
@@ -363,7 +383,8 @@ function HTML_error_path(){
     HTML;
 }
 
-function HTML_error_permisos(){
+function HTML_error_permisos()
+{
     echo <<< HTML
         <main>
             <div class="error-path">
@@ -373,93 +394,150 @@ function HTML_error_permisos(){
     HTML;
 }
 
-function HTML_form_habitaciones() { ?>
+function HTML_form_habitaciones()
+{ ?>
     <section class="registro-habitaciones">
-        <?php if(isset($_SESSION["datos-habitacion"]["correcto"]))  echo "<h2 class='datos-recibidos'>Los datos se han recibido correctamente</h2>" ?>
-        <?php if(isset($_SESSION["datos-habitacion"]["correcto"])) $disable = "disabled"; else $disable = ""; ?>
+        <?php if (isset($_SESSION["datos-habitacion"]["correcto"]))  echo "<h2 class='datos-recibidos'>Los datos se han recibido correctamente</h2>" ?>
+        <?php if (isset($_SESSION["datos-habitacion"]["correcto"])) $disable = "disabled";
+        else $disable = ""; ?>
         <form action="" id="formulario-habitaciones" method="post" enctype="multipart/form-data" novalidate>
             <fieldset>
                 <legend>Registro de habitaciones</legend>
                 <p>
                     <label for="idhabitacion">Nº Habitación:</label>
-                    <input type="text" id="idhabitacion" name="habitacion" value=<?php if(isset($_SESSION["datos-habitacion"]["habitacion"])) echo $_SESSION["datos-habitacion"]["habitacion"] ?> <?php echo $disable ?>>
+                    <input type="text" id="idhabitacion" name="habitacion" value=<?php if (isset($_SESSION["datos-habitacion"]["habitacion"])) echo $_SESSION["datos-habitacion"]["habitacion"] ?> <?php echo $disable ?>>
                 </p>
-                <?php if(isset($_SESSION["errores-habitacion"]["habitacion"])) echo $_SESSION["errores-habitacion"]["habitacion"] ?>
+                <?php if (isset($_SESSION["errores-habitacion"]["habitacion"])) echo $_SESSION["errores-habitacion"]["habitacion"] ?>
                 <p>
                     <label for="idcapacidad">Capacidad:</label>
-                    <input type="text" id="idcapacidad" name="capacidad" value=<?php if(isset($_SESSION["datos-habitacion"]["capacidad"])) echo $_SESSION["datos-habitacion"]["capacidad"] ?> <?php echo $disable ?>>
+                    <input type="text" id="idcapacidad" name="capacidad" value=<?php if (isset($_SESSION["datos-habitacion"]["capacidad"])) echo $_SESSION["datos-habitacion"]["capacidad"] ?> <?php echo $disable ?>>
                 </p>
-                <?php if(isset($_SESSION["errores-habitacion"]["capacidad"])) echo $_SESSION["errores-habitacion"]["capacidad"] ?>
+                <?php if (isset($_SESSION["errores-habitacion"]["capacidad"])) echo $_SESSION["errores-habitacion"]["capacidad"] ?>
                 <p>
                     <label for="idprecio">Precio:</label>
-                    <input type="text" id="idprecio" name="precio" value=<?php if(isset($_SESSION["datos-habitacion"]["precio"])) echo $_SESSION["datos-habitacion"]["precio"] ?> <?php echo $disable ?>>
+                    <input type="text" id="idprecio" name="precio" value=<?php if (isset($_SESSION["datos-habitacion"]["precio"])) echo $_SESSION["datos-habitacion"]["precio"] ?> <?php echo $disable ?>>
                 </p>
-                <?php if(isset($_SESSION["errores-habitacion"]["precio"])) echo $_SESSION["errores-habitacion"]["precio"] ?>
+                <?php if (isset($_SESSION["errores-habitacion"]["precio"])) echo $_SESSION["errores-habitacion"]["precio"] ?>
                 <p>
                     <label for="iddescripcion">Descripción:</label>
-                    <input type="text" id="iddescripcion" name="descripcion" value=<?php if(isset($_SESSION["datos-habitacion"]["descripcion"])) echo $_SESSION["datos-habitacion"]["descripcion"] ?> <?php echo $disable ?>>
+                    <input type="text" id="iddescripcion" name="descripcion" value=<?php if (isset($_SESSION["datos-habitacion"]["descripcion"])) echo $_SESSION["datos-habitacion"]["descripcion"] ?> <?php echo $disable ?>>
                 </p>
-                <?php if(isset($_SESSION["errores-habitacion"]["descripcion"])) echo $_SESSION["errores-habitacion"]["descripcion"] ?>
+                <?php if (isset($_SESSION["errores-habitacion"]["descripcion"])) echo $_SESSION["errores-habitacion"]["descripcion"] ?>
                 <p>
                     <label for="foto">Fotografía:</label>
-                    <input type="file" id="foto" name="fotos[]" multiple <?php echo $disable ?>>
+                    <input type="file" id="foto" name="fotos[]" multiple <?php echo $disable ?> <?php if(isset($_SESSION["modificar-habitacion"]) && $_SESSION["modificar-habitacion"]) echo "disabled" ?>>
                 </p>
                 <?php if(isset($_SESSION["errores-habitacion"]["fotos"])) echo $_SESSION["errores-habitacion"]["fotos"] ?>
                 <div id="previsualizaciones"></div>
                 <?php if (isset($_SESSION["datos-habitacion"]["fotos"]) && is_array($_SESSION["datos-habitacion"]["fotos"])) {
                     foreach ($_SESSION["datos-habitacion"]["fotos"] as $index => $imagen_base64) {
                         echo "<img src='data:image/jpeg;base64,$imagen_base64' style='max-width: 350px; height:auto;'>";
-                        echo "<input type='hidden' name='fotos_guardadas[]' value='$imagen_base64'>";
+                        echo "<input type='hidden' name='fotos_guardadas[]' value='$imagen_base64''>";
                     }
                 } ?>
             </fieldset>
             <div class="boton">
-            <?php 
-                if(isset($_SESSION["datos-habitacion"]["correcto"])){
+                <?php
+                if (isset($_SESSION["datos-habitacion"]["correcto"])) {
                     echo "<input type='submit' value='Confirmar Datos' name='confirmar-habitacion' id='boton-enviar'>";
                 } else {
-                    echo "<input type='submit' value='Enviar Datos' name='enviar-habitacion' id='boton-enviar'>";
+                    if (isset($_SESSION["modificar-habitacion"])) {
+                        echo "<input type='submit' value='Modificar Datos' name='enviar-modificar-habitacion' id='boton-enviar'>";
+                    } else {
+                        echo "<input type='submit' value='Enviar Datos' name='enviar-habitacion' id='boton-enviar'>";
+                    }
                 }
-            ?>
+                ?>
             </div>
         </form>
     </section>
 
 <?php }
 
-function HTML_tabla_Habitaciones($conexion) { ?>
+function HTML_tabla_Habitaciones($conexion)
+{ ?>
     <section class="listado-habitaciones">
         <table>
             <tr>
                 <th>Nº Habitación</th>
                 <th>Modificar</th>
                 <th>Eliminar</th>
+                <th>Modificar Imágenes</th>
             </tr>
             <?php
             $resultado = getHabitaciones($conexion);
-            if($resultado[0]) {
+            if ($resultado[0]) {
                 $resultado = $resultado[1];
-                while($fila = $resultado->fetch_assoc()) {
+                while ($fila = $resultado->fetch_assoc()) {
                     echo "<tr>";
-                    echo "<td>".$fila["Habitacion"]."</td>";
+                    echo "<td>" . $fila["Habitacion"] . "</td>";
                     echo "<form action='' method='post'>";
                     echo "<input type='hidden' name='id-habitacion' value='" . $fila["id"] . "'>";
-                    echo "<td><input type='submit' name='borrar-habitacion' value='Borrar'></td>";
                     echo "<td><input type='submit' name='modificar-habitacion' value='Modificar'></td>";
+                    echo "<td><input type='submit' name='borrar-habitacion' value='Borrar'></td>";
+                    echo "<td><input type='submit' name='modificar-imagenes-habitacion' value='Modificar Imágenes'></td>";
                     echo "</form>";
                     echo "</tr>";
                 }
-                if($resultado->num_rows == 0) {
-                    echo "<tr><td colspan='3'>No hay habitaciones registradas</td></tr>";
+                if ($resultado->num_rows == 0) {
+                    echo "<tr><td colspan='4'>No hay habitaciones registradas</td></tr>";
                 }
             } else {
-                echo "<tr><td colspan='3'>No hay habitaciones registradas</td></tr>";
+                echo "<tr><td colspan='4'>No hay habitaciones registradas</td></tr>";
             }
             ?>
         </table>
     </section>
 <?php }
 
+function HTML_editar_fotos_habitacion()
+{ ?>
+    <form action="" method="post" enctype="multipart/form-data">
+        <fieldset>
+            <legend>Subir Fotografías</legend>
+            <p>
+                <label for="foto">Fotografía:</label>
+                <input type="file" id="foto" name="fotos[]" multiple>
+            </p>
+            <div id="previsualizaciones"></div>
+            <div class="boton">
+                <input type="submit" value="Enviar Fotos" name="enviar-fotos" id="boton-enviar">
+            </div>
+            <div class="listado-habitaciones"></div>
+            </fieldset>
+    </form>
+    <section class="listado-habitaciones">
+        <table>
+            <tr>
+                <th>Nº Habitación</th>
+                <th>Imagen</th>
+                <th>Eliminar</th>
+            </tr>
+            <?php
+            if(!empty($_SESSION["fotos"])){
+                foreach($_SESSION["fotos"] as $foto){
+                    echo "<tr>";
+                    echo "<td>" . $foto["Habitacion"] . "</td>";
+                    echo "<td><img src='data:image/jpeg;base64," . $foto["Imagen"] . "' style='max-width:100px;'></td>";
+                    echo "<td><form action='' method='post'><input type='hidden' name='id-foto' value='" . $foto["id"] . "'><input type='submit' name='borrar-foto' value='Borrar'></form></td>";
+                    echo "</tr>";
+                }
+            } else {
+                echo "<tr><td colspan='3'>No hay fotos registradas</td></tr>";
+            }
+            ?>
+        </table>
+    </section>
+<?php }
+
+function HTML_salir_edicion(){
+    echo <<< HTML
+        <form action="" method="post">
+            <div class="boton">
+                <input type="submit" value="Salir de la Edición" name="salir-edicion" id="boton-enviar">
+            </div>
+        </form>
+    HTML;
+}
+
 ?>
-
-

@@ -252,7 +252,6 @@ function getFotosHabitacion($conexion, $habitacion) {
     $resultadosConsulta = $stmt->get_result();    
     // Verificar si hay resultados
     if ($resultadosConsulta->num_rows === 0) {
-        echo "No se encontraron fotos para la habitación.";
         return [false, null];
     }
     // Obtener todas las filas como un arreglo asociativo
@@ -261,5 +260,25 @@ function getFotosHabitacion($conexion, $habitacion) {
     $stmt->close();
     return [true, $fotos];
 }
+
+function borrarFotoID($conexion, $id){
+    $query = <<< EOD
+        DELETE FROM fotosHabitaciones WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return false;
+    }
+    $stmt->bind_param("i", $id);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return false;
+    }
+    $stmt->close();
+    return true;
+}
+
 
 ?>

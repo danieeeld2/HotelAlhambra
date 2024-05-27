@@ -166,7 +166,7 @@ function validarDatosHabitaciones($conexion) {
     $errores = array();
     $datos = array();
 
-    if(isset($_POST["enviar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    if((isset($_POST["enviar-habitacion"]) || isset($_POST["enviar-modificar-habitacion"])) && $_SERVER["REQUEST_METHOD"] == "POST") {
         // Comprobamos que el número de habitación no es nulo
         if(empty($_POST["habitacion"])) {
             $errores["habitacion"] = "<p class='error'>El Nº Habitación no puede estar vacio</p>";
@@ -174,7 +174,7 @@ function validarDatosHabitaciones($conexion) {
         } else {
             $_POST["habitacion"] = checkInyection($_POST["habitacion"]);
             // Comprobamos si existe una entrada con el mismo nombre en la BD
-            if(checkNumeroHabitacion($conexion, $_POST["habitacion"])) {
+            if(checkNumeroHabitacion($conexion, $_POST["habitacion"]) && isset($_POST["enviar-habitacion"])) {
                 $datos["habitacion"] = "";
                 $errores["habitacion"] = "<p class='error'>Ya existe una habitación con ese nombre</p>";
             } else {
@@ -234,6 +234,7 @@ function validarDatosHabitaciones($conexion) {
             }
         }
 
+        // Rescatar fotos guardadas
         if (isset($_POST['fotos_guardadas'])) {
             if (!isset($datos["fotos"])) {
                 $datos["fotos"] = array();
@@ -242,7 +243,7 @@ function validarDatosHabitaciones($conexion) {
         }
 
         // Comprobamos si no hay errores
-        if(!empty($_POST["enviar-habitacion"])){
+        if(!empty($_POST["enviar-habitacion"]) || !empty($_POST["enviar-modificar-habitacion"])){
             if(empty($errores)){
                 $datos["correcto"] = true;
             }
