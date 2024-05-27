@@ -81,4 +81,185 @@ function getUsuario($conexion, $email, $claveIntroducida) {
     }
 }
 
+// Función para comprobar si existe la habitación en la BD
+
+function checkNumeroHabitacion($conexion, $habitacion) {
+    $query = <<< EOD
+        SELECT * FROM habitacionesHotel WHERE habitacion = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta". $conexion->error;
+        return false;
+    }
+    $stmt->bind_param("s", $habitacion);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return false;
+    }
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $resultado->close();
+        $stmt->close();
+        return false;
+    } else {
+        $resultado->close();
+        $stmt->close();
+        return true;
+    }
+}
+
+// Función para insertar datos de una habitación
+function insertarHabitacion($conexion, $datos) {
+    $query = <<< EOD
+        INSERT INTO habitacionesHotel (habitacion, capacidad, precio, descripcion)
+        VALUES (?,?,?,?)
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return false;
+    }
+    // bindeamos los parámetros
+    $capacidad = (int)$datos['capacidad'];
+    $precio = (double)$datos['precio'];
+    $stmt->bind_param("sids", $datos['habitacion'], $capacidad, $precio, $datos['descripcion']);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return false;
+    }
+    $stmt->close();
+    return true;
+}
+
+// Función para obtener todas las habitaciones de la base de datos
+function getHabitaciones($conexion) {
+    $query = <<< EOD
+        SELECT * FROM habitacionesHotel
+    EOD;
+    $resultado = $conexion->query($query);
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return [false, null];
+    }
+    return [true, $resultado];
+}
+
+// Funcion para obtener una habitacion dado su id
+function getHabitacionID($conexion, $id) {
+    $query = <<< EOD
+        SELECT * FROM habitacionesHotel WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return [false, null];
+    }
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return [false, null];
+    } else {
+        $habitacion = $resultado->fetch_assoc();
+        $stmt->close();
+        $resultado->close();
+        return [true, $habitacion];
+    }
+}
+
+// Función para borrar una habitación dado su id
+function borrarHabitacion($conexion, $id) {
+    $query = <<< EOD
+        DELETE FROM habitacionesHotel WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return false;
+    }
+    $stmt->bind_param("i", $id);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return false;
+    }
+    $stmt->close();
+    return true;
+}
+
+// Funcion para insertar fotos de una habitacion
+function insertarFotoHabitacion($conexion, $foto, $numeroHabitacion) { 
+    $query = <<< EOD
+        INSERT INTO fotosHabitaciones (habitacion, imagen) 
+        VALUES (?, ?)
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return false;
+    }
+    $stmt->bind_param("ss", $numeroHabitacion, $foto);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return false;
+    }
+    $stmt->close();
+    return true;
+}
+
+// Función para borrar las fotos de una habitación
+function borrarFotosHabitacion($conexion, $habitacion) {
+    $query = <<< EOD
+        DELETE FROM fotosHabitaciones WHERE habitacion = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return false;
+    }
+    $stmt->bind_param("s", $habitacion);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return false;
+    }
+    $stmt->close();
+    return true;
+}
+
+// Función para obtener las fotos de una habitación
+function getFotosHabitacion($conexion, $habitacion) {
+    $query = <<< EOD
+        SELECT * FROM fotosHabitaciones WHERE habitacion = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return [false, null];
+    }
+    $stmt->bind_param("s", $habitacion);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return [false, null];
+    }
+    $resultadosConsulta = $stmt->get_result();    
+    // Verificar si hay resultados
+    if ($resultadosConsulta->num_rows === 0) {
+        echo "No se encontraron fotos para la habitación.";
+        return [false, null];
+    }
+    // Obtener todas las filas como un arreglo asociativo
+    $fotos = $resultadosConsulta->fetch_all(MYSQLI_ASSOC);
+    // Liberar recursos
+    $stmt->close();
+    return [true, $fotos];
+}
+
 ?>

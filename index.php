@@ -60,6 +60,32 @@ if (isset($_POST["confirmar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST")
     }
 }
 
+// Comprobamos si se ha enviado el formulario de añadir habitaciones
+if(isset($_POST["enviar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    [$_SESSION["errores-habitacion"], $_SESSION["datos-habitacion"]] = validarDatosHabitaciones($conexion);
+}
+if(isset($_POST["confirmar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $resultado = insertarHabitacion($conexion, $_SESSION["datos-habitacion"]);
+    if(!empty($_SESSION["datos-habitacion"]["fotos"]) && $resultado) {
+        $fotos = $_SESSION["datos-habitacion"]["fotos"];
+        foreach($fotos as $foto) {
+            $resultado_foto = insertarFotoHabitacion($conexion, $foto, $_SESSION["datos-habitacion"]["habitacion"]);
+        }
+    }
+    if($resultado) {
+        unset($_SESSION["datos-habitacion"]);
+    }
+}
+// Comprobamos si se ha enviado el formulario de eliminar habitaciones
+if(isset($_POST["borrar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $habitacion = getHabitacionID($conexion, $_POST["id-habitacion"]);
+    $resultado = borrarHabitacion($conexion, $_POST["id-habitacion"]);
+    if($resultado) { // Borrar las fotos de la habitación en caso de que se haya eliminado correctamente
+        $resultado_fotos = borrarFotosHabitacion($conexion, $habitacion[1]["Habitacion"]);
+    }
+}
+
+
 HTML_init();
 HTML_header();
 HTML_nav();
@@ -78,13 +104,21 @@ if(isset($_GET["pagina"])) {
             HTML_pagina_inicio();
             break;
         case "habitaciones":
-            HTML_pagina_habitaciones();
+            HTML_pagina_habitaciones($conexion);
             break;
         case "servicios":
             HTML_pagina_servicios();
             break;
         case "registro":
             HTML_form_registro() ;
+            break;
+        case "gestion-habitaciones":
+            if($_SESSION["rol"] != "Recepcionista"){
+                HTML_error_permisos();
+            } else {
+                HTML_tabla_Habitaciones($conexion);
+                HTML_form_habitaciones();
+            }
             break;
         default:
             HTML_error_path();

@@ -9,6 +9,11 @@ function HTML_init() {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Hotel Alhambra</title>
             <link rel="stylesheet" href="./css/index.css">
+        HTML;
+            if(isset($_GET["pagina"]) && $_GET["pagina"] == "gestion-habitaciones") {
+                echo "<script src='previsualizacion.js'></script>";
+            }
+        echo <<< HTML
         </head>
         <body>
     HTML;
@@ -46,7 +51,8 @@ function HTML_nav() { ?>
             <li><a href="index.php?pagina=inicio">Inicio</a></li>
             <li><a href="index.php?pagina=habitaciones">Habitaciones</a></li>
             <li><a href="index.php?pagina=servicios">Servicios</a></li>
-            <li><a href="index.php?pagina=registro">Registro</a></li>
+            <?php if(!$_SESSION["iniciado-sesion"]) echo "<li><a href='index.php?pagina=registro'>Registro</a></li>" ?>
+            <?php if($_SESSION["rol"] == "Recepcionista") echo "<li><a href='index.php?pagina=gestion-habitaciones'>Gestión Habitaciones</a></li>" ?>
         </ul>
         <ul class="sesion-pantalla-reducida">
             <li><a href=""><?php if(isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) echo "LogIn"; else echo "LogOut" ?> </a></li>
@@ -108,7 +114,7 @@ function HTML_aside() { ?>
         </section>
     </aside>
 </div>
-<?php }
+<?php } 
 
 // Función para generar el footer
 function HTML_footer() {
@@ -175,86 +181,45 @@ function HTML_pagina_inicio() {
     HTML;
 }
 
-function HTML_pagina_habitaciones() {
-    echo <<< HTML
-        <main>
-            <section class="tarjeta">
-                <h2>Suite Alhambra</h2>
-                <section>
-                    <p>Nuestra Suite Alhambra es el epítome del lujo y la comodidad en Hotel Alhambra Hotel. 
-                        Diseñada para ofrecer una experiencia inolvidable, esta espaciosa suite combina elegancia contemporánea 
-                        con detalles inspirados en la rica historia de Granada. Disfruta de vistas panorámicas a la majestuosa 
-                        Alhambra desde tu propia terraza privada, donde podrás relajarte y maravillarte con la belleza de este emblemático monumento. 
-                        La Suite Alhambra cuenta con una amplia sala de estar, dormitorio independiente, baño lujoso y todas las comodidades 
-                        modernas para garantizar una estancia inigualable. Sumérgete en el lujo y la serenidad mientras 
-                        disfrutas de la experiencia única que solo nuestro hotel puede ofrecer.</p>
-                    <ul>
-                        <li>Capacidad: 2 adultos</li>
-                        <li>Camas: 1 cama king size</li>
-                        <li>Tamaño: 60 m²</li>
-                        <li>Vistas: Alhambra</li>
-                        <li>Desayuno incluido</li>
-                        <li>Wifi gratis</li>
-                        <li>TV de pantalla plana</li>
-                        <li>Minibar</li>
-                        <li>Caja fuerte</li>
-                        <li>Secador de pelo</li>
-                        <li>Albornoz y zapatillas</li>
-                        <li>Artículos de baño de lujo</li>
-                    </ul>
-                </section>
-                <section>
-                    <h2>Observa la Suite Alhambra</h2>
-                    <div class="galeria">
-                        <div class="imagen">
-                            <img src="img/hab-suite.jpg" alt="Habitacion Suite">
-                        </div>
-                        <div class="imagen">
-                            <img src="img/baño-suite.jpg" alt="Baño Suite">
-                        </div>
-                        <div class="imagen">
-                            <img src="img/terraza-suite.jpg" alt="Terraza Suite">
-                        </div>
-                    </div>
-                </section>
-            </section>
-            <section class="tarjeta">
-                <h2>Individual</h2>
-                <section>
-                    <p>Experimenta la serenidad y el confort en nuestra Habitación Individual en el Hotel Alhambra. 
-                        Diseñada para el viajero que valora la privacidad y la comodidad, esta acogedora habitación ofrece un 
-                        refugio tranquilo en el corazón de Granada. Decorada con un estilo elegante y funcional, la 
-                        Habitación Individual está equipada con todas las comodidades modernas para garantizar una estancia confortable. 
-                        Desde su ventana, podrás disfrutar de vistas a los encantadores callejones del Albaicín o al tranquilo patio andaluz del hotel. 
-                        Sumérgete en la auténtica atmósfera de Granada mientras te relajas en tu propio espacio privado en el Hotel Alhambra.</p>
-                    <ul>
-                        <li>Capacidad: 1 adulto</li>
-                        <li>Camas: 1 cama individual</li>
-                        <li>Tamaño: 20 m²</li>
-                        <li>Vistas: Patio interior</li>
-                        <li>Desayuno incluido</li>
-                        <li>Wifi gratis</li>
-                        <li>TV de pantalla plana</li>
-                        <li>Minibar</li>
-                        <li>Caja fuerte</li>
-                        <li>Secador de pelo</li>
-                        <li>Artículos de baño de lujo</li>
-                    </ul>
-                </section>
-                <section>
-                    <h2>Observa la Habitación Individual</h2>
-                    <div class="galeria">
-                        <div class="imagen">
-                            <img src="img/hab-individual.png" alt="Habitacion Individual">
-                        </div>
-                        <div class="imagen" id="bañera">
-                            <img src="img/baño-individual.png" alt="Baño Individual">
-                        </div>
-                    </div>
-                </section>
-            </section>
-        </main>
-    HTML;
+function HTML_pagina_habitaciones($conexion) { 
+    $habitaciones = getHabitaciones($conexion);
+    if($habitaciones[0]) {
+        $habitaciones = $habitaciones[1];
+        echo <<< HTML
+            <main>
+        HTML;
+        while($fila = $habitaciones->fetch_assoc()) {
+            [$resultado, $fotografias] = getFotosHabitacion($conexion, $fila["Habitacion"]);
+            echo <<< HTML
+                <section class="tarjeta">
+                    <h2>Habitación {$fila["Habitacion"]}</h2>
+                    <section>
+                        <p>{$fila["Descripcion"]}</p>
+                        <ul>
+                            <li>Capacidad: {$fila["Capacidad"]} personas</li>
+                            <li>Precio: {$fila["Precio"]} €/noche</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h2>Observa la Habitación</h2>
+                        <div class="galeria">
+            HTML;
+            if($resultado) {
+                if(!empty($fotografias)) {
+                    foreach($fotografias as $foto) {
+                        $imagen = $foto["Imagen"];
+                        echo "<div class='imagen'>";
+                        echo "<img src='data:image/jpeg;base64,$imagen'>";
+                        echo "</div>";
+                    }
+                }
+            }
+        }
+        if($habitaciones->num_rows == 0) {
+            echo "<h2>No hay habitaciones registradas</h2>";
+        }
+        echo "</main>";
+    } 
 }
 
 function HTML_pagina_servicios() {
@@ -398,4 +363,103 @@ function HTML_error_path(){
     HTML;
 }
 
+function HTML_error_permisos(){
+    echo <<< HTML
+        <main>
+            <div class="error-path">
+                <h2>No tienes permisos para acceder a la página solicitada</h2>
+            </div>
+        </main>
+    HTML;
+}
+
+function HTML_form_habitaciones() { ?>
+    <section class="registro-habitaciones">
+        <?php if(isset($_SESSION["datos-habitacion"]["correcto"]))  echo "<h2 class='datos-recibidos'>Los datos se han recibido correctamente</h2>" ?>
+        <?php if(isset($_SESSION["datos-habitacion"]["correcto"])) $disable = "disabled"; else $disable = ""; ?>
+        <form action="" id="formulario-habitaciones" method="post" enctype="multipart/form-data" novalidate>
+            <fieldset>
+                <legend>Registro de habitaciones</legend>
+                <p>
+                    <label for="idhabitacion">Nº Habitación:</label>
+                    <input type="text" id="idhabitacion" name="habitacion" value=<?php if(isset($_SESSION["datos-habitacion"]["habitacion"])) echo $_SESSION["datos-habitacion"]["habitacion"] ?> <?php echo $disable ?>>
+                </p>
+                <?php if(isset($_SESSION["errores-habitacion"]["habitacion"])) echo $_SESSION["errores-habitacion"]["habitacion"] ?>
+                <p>
+                    <label for="idcapacidad">Capacidad:</label>
+                    <input type="text" id="idcapacidad" name="capacidad" value=<?php if(isset($_SESSION["datos-habitacion"]["capacidad"])) echo $_SESSION["datos-habitacion"]["capacidad"] ?> <?php echo $disable ?>>
+                </p>
+                <?php if(isset($_SESSION["errores-habitacion"]["capacidad"])) echo $_SESSION["errores-habitacion"]["capacidad"] ?>
+                <p>
+                    <label for="idprecio">Precio:</label>
+                    <input type="text" id="idprecio" name="precio" value=<?php if(isset($_SESSION["datos-habitacion"]["precio"])) echo $_SESSION["datos-habitacion"]["precio"] ?> <?php echo $disable ?>>
+                </p>
+                <?php if(isset($_SESSION["errores-habitacion"]["precio"])) echo $_SESSION["errores-habitacion"]["precio"] ?>
+                <p>
+                    <label for="iddescripcion">Descripción:</label>
+                    <input type="text" id="iddescripcion" name="descripcion" value=<?php if(isset($_SESSION["datos-habitacion"]["descripcion"])) echo $_SESSION["datos-habitacion"]["descripcion"] ?> <?php echo $disable ?>>
+                </p>
+                <?php if(isset($_SESSION["errores-habitacion"]["descripcion"])) echo $_SESSION["errores-habitacion"]["descripcion"] ?>
+                <p>
+                    <label for="foto">Fotografía:</label>
+                    <input type="file" id="foto" name="fotos[]" multiple <?php echo $disable ?>>
+                </p>
+                <?php if(isset($_SESSION["errores-habitacion"]["fotos"])) echo $_SESSION["errores-habitacion"]["fotos"] ?>
+                <div id="previsualizaciones"></div>
+                <?php if (isset($_SESSION["datos-habitacion"]["fotos"]) && is_array($_SESSION["datos-habitacion"]["fotos"])) {
+                    foreach ($_SESSION["datos-habitacion"]["fotos"] as $index => $imagen_base64) {
+                        echo "<img src='data:image/jpeg;base64,$imagen_base64' style='max-width: 350px; height:auto;'>";
+                        echo "<input type='hidden' name='fotos_guardadas[]' value='$imagen_base64'>";
+                    }
+                } ?>
+            </fieldset>
+            <div class="boton">
+            <?php 
+                if(isset($_SESSION["datos-habitacion"]["correcto"])){
+                    echo "<input type='submit' value='Confirmar Datos' name='confirmar-habitacion' id='boton-enviar'>";
+                } else {
+                    echo "<input type='submit' value='Enviar Datos' name='enviar-habitacion' id='boton-enviar'>";
+                }
+            ?>
+            </div>
+        </form>
+    </section>
+
+<?php }
+
+function HTML_tabla_Habitaciones($conexion) { ?>
+    <section class="listado-habitaciones">
+        <table>
+            <tr>
+                <th>Nº Habitación</th>
+                <th>Modificar</th>
+                <th>Eliminar</th>
+            </tr>
+            <?php
+            $resultado = getHabitaciones($conexion);
+            if($resultado[0]) {
+                $resultado = $resultado[1];
+                while($fila = $resultado->fetch_assoc()) {
+                    echo "<tr>";
+                    echo "<td>".$fila["Habitacion"]."</td>";
+                    echo "<form action='' method='post'>";
+                    echo "<input type='hidden' name='id-habitacion' value='" . $fila["id"] . "'>";
+                    echo "<td><input type='submit' name='borrar-habitacion' value='Borrar'></td>";
+                    echo "<td><input type='submit' name='modificar-habitacion' value='Modificar'></td>";
+                    echo "</form>";
+                    echo "</tr>";
+                }
+                if($resultado->num_rows == 0) {
+                    echo "<tr><td colspan='3'>No hay habitaciones registradas</td></tr>";
+                }
+            } else {
+                echo "<tr><td colspan='3'>No hay habitaciones registradas</td></tr>";
+            }
+            ?>
+        </table>
+    </section>
+<?php }
+
 ?>
+
+

@@ -316,6 +316,7 @@ footer a:hover {
 
 #usuario-iniciado {
     align-items: center;
+    text-align: center;
     color: black;
     font-weight: bold;
 }
@@ -418,6 +419,28 @@ fieldset input[type="file"] {
     color: white;
     text-align: center;
 }
+
+.listado-habitaciones {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.listado-habitaciones table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.listado-habitaciones th, .listado-habitaciones td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.listado-habitaciones th {
+    background-color: #f2f2f2;
+}
+
 
 /* ------------------- Media Queries ------------------- */
 

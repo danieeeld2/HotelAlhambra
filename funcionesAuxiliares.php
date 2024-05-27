@@ -48,5 +48,11 @@ function limpiarSesionFormularios(){
     if(isset($_SESSION["datos-registro"])){
         unset($_SESSION["datos-registro"]);
     }
+    if(isset($_SESSION["errores-habitacion"])){
+        unset($_SESSION["errores-habitacion"]);
+    }
+    if(isset($_SESSION["datos-habitacion"])){
+        unset($_SESSION["datos-habitacion"]);
+    }
 }
 ?>

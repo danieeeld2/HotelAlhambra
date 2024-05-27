@@ -158,4 +158,98 @@ function validarLogIn($conexion) {
 
     }
 }
+
+// Función para validar el formulario de habitaciones
+
+function validarDatosHabitaciones($conexion) {
+    // Inicializamos los arrays de errores y datos
+    $errores = array();
+    $datos = array();
+
+    if(isset($_POST["enviar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+        // Comprobamos que el número de habitación no es nulo
+        if(empty($_POST["habitacion"])) {
+            $errores["habitacion"] = "<p class='error'>El Nº Habitación no puede estar vacio</p>";
+            $datos["habitacion"] = "";
+        } else {
+            $_POST["habitacion"] = checkInyection($_POST["habitacion"]);
+            // Comprobamos si existe una entrada con el mismo nombre en la BD
+            if(checkNumeroHabitacion($conexion, $_POST["habitacion"])) {
+                $datos["habitacion"] = "";
+                $errores["habitacion"] = "<p class='error'>Ya existe una habitación con ese nombre</p>";
+            } else {
+                $datos["habitacion"] = $_POST["habitacion"];
+            }
+        }
+
+        // Comprobamos que la capacidad no sea nula
+        if(empty($_POST["capacidad"])){
+            $errores["capacidad"] = "<p class='error'>La capacidad no puede estar vacia</p>";
+            $datos["capacidad"] = "";
+        } else {
+            // Comprobar que es un número entero
+            if(!is_numeric($_POST["capacidad"]) || !is_int($_POST["capacidad"] + 0)){
+                $errores["capacidad"] = "<p class='error'>La capacidad debe ser un número entero</p>";
+                $datos["capacidad"] = "";
+            }else{
+                $datos["capacidad"] = $_POST["capacidad"];
+            }
+        }
+
+        // Comprobamos que el precio no sea nulo
+        if(empty(($_POST["precio"]))){
+            $errores["precio"] = "<p class='error'>El precio no puede estar vacío</p>";
+            $datos["precio"] = "";
+        } else {
+            // Comprobar que es un double
+            if(!is_numeric($_POST["precio"]) || !is_double($_POST["precio"] + 0)){
+                $errores["precio"] = "<p class='error'>El precio debe ser un número decimal</p>";
+                $datos["precio"] = "";
+            }else{
+                $datos["precio"] = $_POST["precio"];
+            }
+        }
+
+        // Comprobamos que la descripción no sea vacía
+        if(empty($_POST["descripcion"])) {
+            $errores["descripcion"] = "<p class='error'>La descripción no puede estar vacía</p>";
+            $datos["descripcion"] = "";
+        } else { 
+            $datos["descripcion"] = checkInyection($_POST["descripcion"]);
+        }
+
+        // Validar Fotografías
+        if(!empty($_FILES['fotos']['name'][0])) {
+            $allowed_types = array(IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF);
+            foreach($_FILES['fotos']['tmp_name'] as $key => $tmp_name) {
+                $file_type = exif_imagetype($tmp_name);
+                if(!in_array($file_type, $allowed_types)) {
+                    break;
+                } else {
+                    // Leer la imagen en formato base64
+                    $imagen_base64 = base64_encode(file_get_contents($tmp_name));
+                    // Añadir la imagen al array de datos
+                    $datos["fotos"][] = $imagen_base64;
+                }
+            }
+        }
+
+        if (isset($_POST['fotos_guardadas'])) {
+            if (!isset($datos["fotos"])) {
+                $datos["fotos"] = array();
+            }
+            $datos["fotos"] = array_merge($datos["fotos"], $_POST['fotos_guardadas']);
+        }
+
+        // Comprobamos si no hay errores
+        if(!empty($_POST["enviar-habitacion"])){
+            if(empty($errores)){
+                $datos["correcto"] = true;
+            }
+        }
+    }
+
+    return [$errores, $datos];
+
+}
 ?>
