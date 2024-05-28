@@ -59,6 +59,11 @@ if (isset($_POST["enviar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
 if (isset($_POST["confirmar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     $resultado = insertarUsuario($conexion, $_SESSION["datos-registro"]);
     if($resultado) {
+        $_SESSION["rol"] = "Cliente";
+        $_SESSION["usuario"] = $_SESSION["datos-registro"]["nombre"];
+        $_SESSION["email"] = $_SESSION["datos-registro"]["email"];
+        $_SESSION["iniciado-sesion"] = true;
+        $_GET["pagina"] = "inicio";
         unset($_SESSION["datos-registro"]);
     }
 }
@@ -167,6 +172,9 @@ if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     [$_SESSION["errores-reserva"], $_SESSION["datos-reserva"]] = validarDatosReserva();
     // Si todo esta correcto inciar el proceso de reserva
     if(empty($_SESSION["errores-reserva"])){
+        // Primero eliminamos los que hayan excedido la marca temporal
+        borrarReservasCaducadas($conexion);
+        // Buscar reserva ópyima
         [$ok, $habitacion] = comprobarReserva($conexion, $_SESSION["datos-reserva"]["numeropersonas"], $_SESSION["datos-reserva"]["entrada"], $_SESSION["datos-reserva"]["salida"]);
         if($ok){
             // Crear tupla de reserva con estado "pendiente", marca de tiempo actual y los datos del formulario
@@ -176,12 +184,6 @@ if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
                 $email = $_SESSION["datos-reserva"]["email"];
             }
             $resultado = crearReservaPendiente($conexion, $habitacion, $email, $_SESSION["datos-reserva"]);
-            if($resultado){
-                print("oleee");
-            } else {
-                print("F");
-            }
-
         } else {
             $reserva = false;
         }
@@ -213,7 +215,11 @@ if(isset($_GET["pagina"])) {
             HTML_pagina_servicios();
             break;
         case "registro":
-            HTML_form_registro() ;
+            if($_SESSION["rol"] == "Anonimo"){
+                HTML_form_registro() ;
+            } else {
+                HTML_error_permisos();
+            }
             break;
         case "gestion-habitaciones":
             if($_SESSION["rol"] != "Recepcionista"){

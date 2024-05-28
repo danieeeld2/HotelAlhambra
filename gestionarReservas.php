@@ -73,7 +73,7 @@ function obtenerCapacidad($conexion, $habitacion) {
 
 // Función que comprueba si una reserva es posible
 function comprobarReserva($conexion, $capacidad, $entrada, $salida) {
-    // Primero vemos si hay habitaciones con cpacidad mayor o igual que pide el usuario
+    // Primero vemos si hay habitaciones con capacidad mayor o igual que pide el usuario
     [$ok, $resultado] = comprobarCapacidad($conexion, $capacidad);    
     if(!$ok) {
         return [false, null];
@@ -128,8 +128,7 @@ function crearReservaPendiente($conexion, $habitacion, $email, $datos){
     EOD;
     $stmt = $conexion->prepare($query);
     $precio = obtenerPrecio($conexion, $habitacion);
-    $estado = "pendiente";
-    $marca = time();
+    $estado = "Pendiente";
     $stmt->bind_param("sisssdss", $habitacion, $datos["numeropersonas"], $datos["entrada"], $datos["salida"], $datos["comentario"], $precio, $estado, $email);
     $resultado = $stmt->execute();
     $stmt->close();
