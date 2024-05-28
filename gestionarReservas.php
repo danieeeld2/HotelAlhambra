@@ -99,4 +99,52 @@ function comprobarReserva($conexion, $capacidad, $entrada, $salida) {
     $habitacion = array_search($min, $capacidades);
     return [true, $habitacion];
 }
+
+// Función que devuelve el precio de una habitación
+function obtenerPrecio($conexion, $habitacion) {
+    $query = <<< EOD
+        SELECT precio FROM habitacionesHotel WHERE habitacion = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("s", $habitacion);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $resultado->close();
+        $stmt->close();
+        return -1;
+    } else {
+        $precio = $resultado->fetch_assoc()["precio"];
+        $resultado->close();
+        $stmt->close();
+        return $precio;
+    }
+}
+
+// Función para crear la tupla de reserva en la base de datos con estado "pendiente"
+function crearReservaPendiente($conexion, $habitacion, $email, $datos){
+    $query = <<< EOD
+        INSERT INTO reservasHotel (habitacion, personas, entrada, salida, comentario, precio, estado, marca, email) VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), ?)
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $precio = obtenerPrecio($conexion, $habitacion);
+    $estado = "pendiente";
+    $marca = time();
+    $stmt->bind_param("sisssdss", $habitacion, $datos["numeropersonas"], $datos["entrada"], $datos["salida"], $datos["comentario"], $precio, $estado, $email);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+}
+
+//Función para borrar las tuplas de reservas con estado "pendiente" que han caducado
+// Consideramos que ha caducado cuando han pasado 30 segundos desde que se creó
+function borrarReservasCaducadas($conexion) {
+    $query = <<< EOD
+        DELETE FROM reservasHotel WHERE estado = "pendiente" AND (UNIX_TIMESTAMP() - marca) > 30
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+}
 ?>

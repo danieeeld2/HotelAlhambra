@@ -168,6 +168,23 @@ if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     // Si todo esta correcto inciar el proceso de reserva
     if(empty($_SESSION["errores-reserva"])){
         [$ok, $habitacion] = comprobarReserva($conexion, $_SESSION["datos-reserva"]["numeropersonas"], $_SESSION["datos-reserva"]["entrada"], $_SESSION["datos-reserva"]["salida"]);
+        if($ok){
+            // Crear tupla de reserva con estado "pendiente", marca de tiempo actual y los datos del formulario
+            if($_SESSION["rol"] == "Cliente"){
+                $email = $_SESSION["email"];
+            } else {
+                $email = $_SESSION["datos-reserva"]["email"];
+            }
+            $resultado = crearReservaPendiente($conexion, $habitacion, $email, $_SESSION["datos-reserva"]);
+            if($resultado){
+                print("oleee");
+            } else {
+                print("F");
+            }
+
+        } else {
+            $reserva = false;
+        }
     }
 }
 
@@ -214,6 +231,9 @@ if(isset($_GET["pagina"])) {
         case "reservas":
             if($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente"){
                 HTML_formulario_reserva();
+                if(isset($reserva)){
+                    HTML_error_reserva();
+                }
             } else {
                 HTML_error_permisos();
             }

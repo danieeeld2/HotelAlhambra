@@ -573,4 +573,15 @@ function HTML_formulario_reserva(){ ?>
     </section>
 <?php }
 
+function HTML_error_reserva()
+{
+    echo <<< HTML
+        <main>
+            <div class="error-path">
+                <h2>No hay habitaciones disponibles con dichas especificaciones</h2>
+            </div>
+        </main>
+    HTML;
+}
+
 ?>
