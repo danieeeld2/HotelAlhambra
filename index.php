@@ -184,8 +184,43 @@ if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
                 $email = $_SESSION["datos-reserva"]["email"];
             }
             $resultado = crearReservaPendiente($conexion, $habitacion, $email, $_SESSION["datos-reserva"]);
+            if($resultado){
+                $_SESSION["tiempo-inicio-reserva"] = time();
+                $_SESSION["reserva"] = true;
+                $_SESSION["id-reserva"] = obtenerIdReserva($conexion, $habitacion, $email, $_SESSION["datos-reserva"]);
+            }
         } else {
             $reserva = false;
+        }
+    }
+}
+// Comprobamos si se ha enviado el formulario de confirmar reserva
+if(isset($_POST["confirmar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    if(time() - $_SESSION["tiempo-inicio-reserva"] < 30){
+        confirmarReserva($conexion, $_SESSION["id-reserva"]);
+        if(isset($_SESSION["datos-reserva"])) unset($_SESSION["datos-reserva"]);
+    } else {
+        $expirada = true;
+    }
+    if(isset($_SESSION["reserva"])) unset($_SESSION["reserva"]);
+    if(isset($_SESSION["tiempo-inicio-reserva"])) unset($_SESSION["tiempo-inicio-reserva"]);
+    if(isset($_SESSION["id-reserva"])) unset($_SESSION["id-reserva"]);
+}
+// Comprobamos si se ha enviado el formulario de cancelar reserva
+if(isset($_POST["cancelar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    borrarReserva($conexion, $_SESSION["id-reserva"]);
+    if(isset($_SESSION["reserva"])) unset($_SESSION["reserva"]);
+    if(isset($_SESSION["tiempo-inicio-reserva"])) unset($_SESSION["tiempo-inicio-reserva"]);
+    if(isset($_SESSION["id-reserva"])) unset($_SESSION["id-reserva"]);
+}
+// Comrpobamos si ha pasado el tiempo de confirmar reserva (Por si recarga la página)
+if((isset($_SESSION["reserva"]) && $_SESSION["reserva"] == true)){
+    if(time() - $_SESSION["tiempo-inicio-reserva"] > 30){;
+        if(isset($_SESSION["reserva"])) unset($_SESSION["reserva"]);
+        if(isset($_SESSION["tiempo-inicio-reserva"])) unset($_SESSION["tiempo-inicio-reserva"]);
+        if(isset($_SESSION["id-reserva"])) unset($_SESSION["id-reserva"]);
+        if(!isset($_POST["cancelar-reserva"])){
+            $expirada = true;
         }
     }
 }
@@ -236,9 +271,16 @@ if(isset($_GET["pagina"])) {
             break;
         case "reservas":
             if($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente"){
-                HTML_formulario_reserva();
-                if(isset($reserva)){
-                    HTML_error_reserva();
+                if(!isset($_SESSION["reserva"]) || $_SESSION["reserva"] == false){
+                    HTML_formulario_reserva();
+                    if(isset($reserva)){
+                        HTML_error_reserva();
+                    }
+                    if(isset($expirada)){
+                        HTML_error_reserva_expirada();
+                    }
+                } else {
+                    HTML_confirmar_reserva(obtenerDatosReserva($conexion, $_SESSION["id-reserva"]));
                 }
             } else {
                 HTML_error_permisos();

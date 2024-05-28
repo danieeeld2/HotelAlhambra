@@ -584,4 +584,40 @@ function HTML_error_reserva()
     HTML;
 }
 
+function HTML_confirmar_reserva($datos_reserva) { ?>
+    <section class="tarjeta">
+        <h2>Confirmación de Reserva</h2>
+        <section>
+            <p>Se ha realizado la reserva de la habitación <?php echo $datos_reserva["Habitacion"] ?> con éxito. A continuación, se muestran los detalles de la reserva:</p>
+            <ul>
+                <li>Número de Personas: <?php echo $datos_reserva["Personas"] ?></li>
+                <li>Fecha de Entrada: <?php echo $datos_reserva["Entrada"] ?></li>
+                <li>Fecha de Salida: <?php echo $datos_reserva["Salida"] ?></li>
+                <li>Comentario: <?php echo $datos_reserva["Comentario"] ?></li>
+                <li></li>Precio: <?php echo $datos_reserva["Precio"] ?> €/noche</li>
+            </ul>
+        </section>
+        <form action="" method="post">
+            <div class="fila-boton">
+                <div class="boton">
+                    <input type="submit" value="Confirmar Reserva" name="confirmar-reserva" id="boton-enviar">
+                </div>
+                <div class="boton">
+                    <input type="submit" value="Cancelar Reserva" name="cancelar-reserva" id="boton-enviar">
+                </div>
+            </div>
+        </form>
+    </section>
+<?php }
+
+function HTML_error_reserva_expirada(){
+    echo <<< HTML
+        <main>
+            <div class="error-path">
+                <h2>Excediste el tiempo de espera, reserva expirada</h2>
+            </div>
+        </main>
+    HTML;
+}
+
 ?>

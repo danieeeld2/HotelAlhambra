@@ -146,4 +146,70 @@ function borrarReservasCaducadas($conexion) {
     $stmt->close();
     return $resultado;
 }
+
+// Función que devuelve el identificador de una reserva
+function obtenerIdReserva($conexion, $habitacion, $email, $datos) {
+    $query = <<< EOD
+        SELECT id FROM reservasHotel WHERE habitacion = ? AND email = ? AND personas = ? AND entrada = ? AND salida = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("ssiss", $habitacion, $email, $datos["numeropersonas"], $datos["entrada"], $datos["salida"]);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $resultado->close();
+        $stmt->close();
+        return -1;
+    } else {
+        $id = $resultado->fetch_assoc()["id"];
+        $resultado->close();
+        $stmt->close();
+        return $id;
+    }
+}
+
+// Función que devuelve los datos de una reserva dado su identificador
+function obtenerDatosReserva($conexion, $id) {
+    $query = <<< EOD
+        SELECT * FROM reservasHotel WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $resultado->close();
+        $stmt->close();
+        return null;
+    } else {
+        $datos = $resultado->fetch_assoc();
+        $resultado->close();
+        $stmt->close();
+        return $datos;
+    }
+}
+
+// Función para borrar una reserva dado su id
+function borrarReserva($conexion, $id) {
+    $query = <<< EOD
+        DELETE FROM reservasHotel WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("i", $id);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+}
+
+// Función para confirmar una reserva
+function confirmarReserva($conexion, $id) {
+    $query = <<< EOD
+        UPDATE reservasHotel SET estado = "Confirmada" WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("i", $id);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+}
 ?>
