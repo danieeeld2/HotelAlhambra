@@ -253,4 +253,66 @@ function validarDatosHabitaciones($conexion) {
     return [$errores, $datos];
 
 }
+
+// Función para validar el formulario de reservas
+function validarDatosReserva() {
+    // Inicializamos los arrays de errores y datos
+    $errores = array();
+    $datos = array();
+
+    if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+        // Comprobamos que el número de habitación no es nulo
+        if(empty($_POST["numeropersonas"])){
+            $errores["numeropersonas"] = "<p class='error'>El número de personas no puede estar vacío</p>";
+            $datos["numeropersonas"] = "";
+        } else {
+            // Comprobar que es un número entero
+            if(!is_numeric($_POST["numeropersonas"]) || !is_int($_POST["numeropersonas"] + 0)){
+                $errores["numeropersonas"] = "<p class='error'>El número de personas debe ser un número entero</p>";
+                $datos["numeropersonas"] = "";
+            }else{
+                $datos["numeropersonas"] = $_POST["numeropersonas"];
+            }
+        }
+
+        //Comprobamos que la fecha de entrada no sea nula
+        if(empty($_POST["entrada"])){
+            $errores["entrada"] = "<p class='error'>La fecha de entrada no puede estar vacía</p>";
+            $datos["entrada"] = "";
+        } else {
+            $datos["entrada"] = $_POST["entrada"];
+        }
+
+        // Comprobamos que la fecha de salida no sea nula y sea mayor que la de entrada
+        if(empty($_POST["salida"])){
+            $errores["salida"] = "<p class='error'>La fecha de salida no puede estar vacía</p>";
+            $datos["salida"] = "";
+        } else {
+            // Comprobar que la fecha de salida es mayor que la de entrada
+            if($_POST["salida"] <= $_POST["entrada"]){
+                $errores["salida"] = "<p class='error'>La fecha de salida debe ser posterior a la de entrada</p>";
+                $datos["salida"] = "";
+            }else{
+                $datos["salida"] = $_POST["salida"];
+            }
+        }
+
+        // Hacer sticky los comentarios
+        if(empty($_POST["comentario"])){
+            $datos["comentario"] = "";
+        } else {
+            $datos["comentario"] = $_POST["comentario"];
+        }
+
+        // Comprobamos si no hay errores
+        if(!empty($_POST["enviar-reserva"])){
+            if(empty($errores)){
+                $datos["correcto"] = true;
+            }
+        }
+    }
+
+    return [$errores, $datos];
+        
+}
 ?>

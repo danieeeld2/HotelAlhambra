@@ -57,6 +57,7 @@ function HTML_nav()
             <li><a href="index.php?pagina=servicios">Servicios</a></li>
             <?php if (!$_SESSION["iniciado-sesion"]) echo "<li><a href='index.php?pagina=registro'>Registro</a></li>" ?>
             <?php if ($_SESSION["rol"] == "Recepcionista") echo "<li><a href='index.php?pagina=gestion-habitaciones'>Gestión Habitaciones</a></li>" ?>
+            <?php if ($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente") echo "<li><a href='index.php?pagina=reservas'>Reservas</a></li>" ?>
         </ul>
         <ul class="sesion-pantalla-reducida">
             <li><a href=""><?php if (isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) echo "LogIn";
@@ -539,5 +540,37 @@ function HTML_salir_edicion(){
         </form>
     HTML;
 }
+
+function HTML_formulario_reserva(){ ?>
+    <section class="registro-reserva">
+        <form action="" method="post" novalidate>
+            <fieldset>
+                <legend>Reserva de Habitaciones</legend>
+                <p>
+                    <label for="idnumeropersonas">Número de Personas:</label>
+                    <input type="text" id="idnumeropersonas" name="numeropersonas" value=<?php if (isset($_SESSION["datos-reserva"]["numeropersonas"])) echo $_SESSION["datos-reserva"]["numeropersonas"] ?>>
+                </p>
+                <?php if (isset($_SESSION["errores-reserva"]["numeropersonas"])) echo $_SESSION["errores-reserva"]["numeropersonas"] ?>
+                <p>
+                    <label for="identrada">Fecha de Entrada:</label>
+                    <input type="date" id="identrada" name="entrada" value=<?php if (isset($_SESSION["datos-reserva"]["entrada"])) echo $_SESSION["datos-reserva"]["entrada"] ?>>
+                </p>
+                <?php if (isset($_SESSION["errores-reserva"]["entrada"])) echo $_SESSION["errores-reserva"]["entrada"] ?>
+                <p>
+                    <label for="idsalida">Fecha de Salida:</label>
+                    <input type="date" id="idsalida" name="salida" value=<?php if (isset($_SESSION["datos-reserva"]["salida"])) echo $_SESSION["datos-reserva"]["salida"] ?>>
+                </p>
+                <?php if (isset($_SESSION["errores-reserva"]["salida"])) echo $_SESSION["errores-reserva"]["salida"] ?>
+                <p>
+                    <label for="idcomentario">Comentario:</label>
+                    <textarea id="idcomentario" name="comentario"><?php if (isset($_SESSION["datos-reserva"]["comentario"])) echo $_SESSION["datos-reserva"]["comentario"] ?></textarea>
+                </p>
+                <div class="boton">
+                    <input type="submit" value="Enviar Reserva" name="enviar-reserva" id="boton-enviar">
+                </div>
+            </fieldset>
+        </form>
+    </section>
+<?php }
 
 ?>

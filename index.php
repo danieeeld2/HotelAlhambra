@@ -3,6 +3,7 @@ require_once("html.php");
 require_once("funcionesValidacion.php");
 require_once("funcionesBD.php");
 require_once("conexionBD.php");
+require_once("gestionarReservas.php");
 
 session_start();
 
@@ -34,6 +35,8 @@ if (isset($_POST["iniciar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
             // Logear al usuario y cambiar rol
             $_SESSION["rol"] = $usuario["rol"];
             $_SESSION["usuario"] = $usuario["nombre"];
+            // Alamecnar email (que es un dato único) en la sesión
+            $_SESSION["email"] = $_SESSION["datos-login"]["email-sesion"];
             $_SESSION["iniciado-sesion"] = true;
         } else {
             $_SESSION["error-login"] = "<p class='error'>La contraseña es incorrecta</p>";
@@ -159,6 +162,16 @@ if(isset($_POST["salir-edicion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 
+// Comprobamos si se ha enviado el formulario de reserva
+if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    [$_SESSION["errores-reserva"], $_SESSION["datos-reserva"]] = validarDatosReserva();
+    // Si todo esta correcto inciar el proceso de reserva
+    if(empty($_SESSION["errores-reserva"])){
+        [$ok, $habitacion] = comprobarReserva($conexion, $_SESSION["datos-reserva"]["numeropersonas"], $_SESSION["datos-reserva"]["entrada"], $_SESSION["datos-reserva"]["salida"]);
+    }
+}
+
+
 HTML_init();
 HTML_header();
 HTML_nav();
@@ -198,6 +211,13 @@ if(isset($_GET["pagina"])) {
                 }
             }
             break;
+        case "reservas":
+            if($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente"){
+                HTML_formulario_reserva();
+            } else {
+                HTML_error_permisos();
+            }
+            break;
         default:
             HTML_error_path();
             break;
@@ -210,4 +230,7 @@ if(isset($_GET["pagina"])) {
 HTML_aside();
 HTML_footer() ;
 HTML_close();
+
+// Desconectamos de la base de datos
+desconectar_bbdd($conexion);
 ?>
