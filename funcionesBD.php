@@ -81,6 +81,19 @@ function getUsuario($conexion, $email, $claveIntroducida) {
     }
 }
 
+// Funcion oara obtener todos los usuarios de la base de datos
+function getUsuarios($conexion) {
+    $query = <<< EOD
+        SELECT * FROM usuariosHotel
+    EOD;
+    $resultado = $conexion->query($query);
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return [false, null];
+    }
+    return [true, $resultado];
+}
+
 // Función para comprobar si existe la habitación en la BD
 
 function checkNumeroHabitacion($conexion, $habitacion) {

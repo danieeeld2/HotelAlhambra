@@ -23,6 +23,8 @@ if(!isset($_SESSION["ultima-pag-visitada"])){
     $_SESSION["ultima-pag-visitada"] = "inicio";
 }
 
+///////////////////////////////////// GESTION DE LOGIN ///////////////////////////////////////
+
 // Comprobamos si se ha enviado el formulario de login
 if (isset($_POST["iniciar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     [$_SESSION["errores-login"], $_SESSION["datos-login"]] = validarLogIn($conexion);
@@ -52,6 +54,8 @@ if (isset($_POST["cerrar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     unset($_SESSION["datos-login"]);
 }
 
+///////////////////////////////////// GESTION DE REGISTRO ///////////////////////////////////////
+
 // Comprobamos si se ha enviado el formulario de registro
 if (isset($_POST["enviar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     [$_SESSION["errores-registro"], $_SESSION["datos-registro"]] = validarDatosRegistro();
@@ -67,6 +71,8 @@ if (isset($_POST["confirmar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST")
         unset($_SESSION["datos-registro"]);
     }
 }
+
+///////////////////////////////////// GESTION DE HABITACIONES ///////////////////////////////////////
 
 // Comprobamos si se ha enviado el formulario de añadir habitaciones
 if(isset($_POST["enviar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
@@ -166,6 +172,7 @@ if(isset($_POST["salir-edicion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     if(isset($_SESSION["datos-habitacion"])) unset($_SESSION["datos-habitacion"]);
 }
 
+///////////////////////////////////// GESTION DE RESERVAS ///////////////////////////////////////
 
 // Comprobamos si se ha enviado el formulario de reserva
 if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
@@ -181,8 +188,9 @@ if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
             if($_SESSION["rol"] == "Cliente"){
                 $email = $_SESSION["email"];
             } else {
-                $email = $_SESSION["datos-reserva"]["email"];
+                $email = $_POST["usuario-reserva"];
             }
+            $_SESSION["datos-reserva"]["email"] = $email;
             $resultado = crearReservaPendiente($conexion, $habitacion, $email, $_SESSION["datos-reserva"]);
             if($resultado){
                 $_SESSION["tiempo-inicio-reserva"] = time();
@@ -272,7 +280,8 @@ if(isset($_GET["pagina"])) {
         case "reservas":
             if($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente"){
                 if(!isset($_SESSION["reserva"]) || $_SESSION["reserva"] == false){
-                    HTML_formulario_reserva();
+                    $_SESSION["usuarios"] = getUsuarios($conexion);
+                    HTML_formulario_reserva($_SESSION["usuarios"]);
                     if(isset($reserva)){
                         HTML_error_reserva();
                     }
@@ -280,7 +289,7 @@ if(isset($_GET["pagina"])) {
                         HTML_error_reserva_expirada();
                     }
                 } else {
-                    HTML_confirmar_reserva(obtenerDatosReserva($conexion, $_SESSION["id-reserva"]));
+                    HTML_confirmar_reserva(obtenerDatosReserva($conexion, $_SESSION["id-reserva"]), $_SESSION["datos-reserva"]["email"]);
                 }
             } else {
                 HTML_error_permisos();

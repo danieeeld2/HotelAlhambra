@@ -541,11 +541,26 @@ function HTML_salir_edicion(){
     HTML;
 }
 
-function HTML_formulario_reserva(){ ?>
+function HTML_formulario_reserva($usuarios){ ?>
     <section class="registro-reserva">
         <form action="" method="post" novalidate>
             <fieldset>
                 <legend>Reserva de Habitaciones</legend>
+                <?php if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") { ?>
+                    <p>
+                        <label for="idusuario">Seleccionar Usuario:</label>
+                        <select name="usuario-reserva" id="idusuario">
+                            <?php
+                            if ($usuarios[0]) {
+                                $usuarios = $usuarios[1];
+                                while ($fila = $usuarios->fetch_assoc()) {
+                                    echo "<option value='" . $fila["email"] . "'>" . $fila["nombre"] . " - " . $fila["apellidos"] . " - " . $fila["dni"] . " - " . $fila["email"] . "</option>";
+                                }
+                            }
+                            ?>
+                        </select>
+                    </p>
+                <?php } ?>
                 <p>
                     <label for="idnumeropersonas">Número de Personas:</label>
                     <input type="text" id="idnumeropersonas" name="numeropersonas" value=<?php if (isset($_SESSION["datos-reserva"]["numeropersonas"])) echo $_SESSION["datos-reserva"]["numeropersonas"] ?>>
@@ -584,7 +599,7 @@ function HTML_error_reserva()
     HTML;
 }
 
-function HTML_confirmar_reserva($datos_reserva) { ?>
+function HTML_confirmar_reserva($datos_reserva, $email) { ?>
     <section class="tarjeta">
         <h2>Confirmación de Reserva</h2>
         <section>
@@ -594,7 +609,8 @@ function HTML_confirmar_reserva($datos_reserva) { ?>
                 <li>Fecha de Entrada: <?php echo $datos_reserva["Entrada"] ?></li>
                 <li>Fecha de Salida: <?php echo $datos_reserva["Salida"] ?></li>
                 <li>Comentario: <?php echo $datos_reserva["Comentario"] ?></li>
-                <li></li>Precio: <?php echo $datos_reserva["Precio"] ?> €/noche</li>
+                <li>Precio: <?php echo $datos_reserva["Precio"] ?> €/noche</li>
+                <li>Email de Reserva: <?php echo $email ?></li>
             </ul>
         </section>
         <form action="" method="post">
