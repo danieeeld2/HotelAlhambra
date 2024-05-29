@@ -63,6 +63,12 @@ function limpiarSesionFormularios(){
     if(isset($_SESSION["fotos"])){
         unset($_SESSION["fotos"]);
     }
+    if(isset($_SESSION["usuarios"])){
+        unset($_SESSION["usuarios"]);
+    }
+    if(isset($_SESSION["habitaciones"])){
+        unset($_SESSION["habitaciones"]);
+    }
 }
 
 // Función para asegurarse de que el número tenga un formato decimal adecuado

@@ -315,4 +315,50 @@ function validarDatosReserva() {
     return [$errores, $datos];
         
 }
+
+// Función para validar datos de reforma
+function validarDatosReforma() {
+    // Inicializamos los arrays de errores y datos
+    $errores = array();
+    $datos = array();
+
+    if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+        // Comprobamos que la habitación no sea nula
+        if(empty($_POST["habitacion-reforma"])){
+            $errores["habitacion-reforma"] = "<p class='error'>La habitación no puede estar vacía</p>";
+            $datos["habitacion-reforma"] = "";
+        } else {
+            $datos["habitacion-reforma"] = $_POST["habitacion-reforma"];
+        }
+        //Comprobamos que la fecha de entrada no sea nula
+        if(empty($_POST["entrada"])){
+            $errores["entrada"] = "<p class='error'>La fecha de entrada no puede estar vacía</p>";
+            $datos["entrada"] = "";
+        } else {
+            $datos["entrada"] = $_POST["entrada"];
+        }
+
+        // Comprobamos que la fecha de salida no sea nula y sea mayor que la de entrada
+        if(empty($_POST["salida"])){
+            $errores["salida"] = "<p class='error'>La fecha de salida no puede estar vacía</p>";
+            $datos["salida"] = "";
+        } else {
+            // Comprobar que la fecha de salida es mayor que la de entrada
+            if($_POST["salida"] <= $_POST["entrada"]){
+                $errores["salida"] = "<p class='error'>La fecha de salida debe ser posterior a la de entrada</p>";
+                $datos["salida"] = "";
+            }else{
+                $datos["salida"] = $_POST["salida"];
+            }
+        }
+        // Comprobamos si no hay errores
+        if(!empty($_POST["enviar-reserva"])){
+            if(empty($errores)){
+                $datos["correcto"] = true;
+            }
+        }
+    }
+
+    return [$errores, $datos];
+}
 ?>

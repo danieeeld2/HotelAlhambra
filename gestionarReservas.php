@@ -212,4 +212,16 @@ function confirmarReserva($conexion, $id) {
     $stmt->close();
     return $resultado;
 }
+
+function establecerHabitacionReforma($conexion, $habitacion, $fecha1, $fecha2) {
+    $query = <<< EOD
+        INSERT INTO reservasHotel (habitacion, entrada, salida, estado, marca) VALUES (?, ?, ?, "Mantenimiento", UNIX_TIMESTAMP())
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("sss", $habitacion, $fecha1, $fecha2);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+
+}
 ?>

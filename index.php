@@ -176,29 +176,52 @@ if(isset($_POST["salir-edicion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Comprobamos si se ha enviado el formulario de reserva
 if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
-    [$_SESSION["errores-reserva"], $_SESSION["datos-reserva"]] = validarDatosReserva();
-    // Si todo esta correcto inciar el proceso de reserva
-    if(empty($_SESSION["errores-reserva"])){
-        // Primero eliminamos los que hayan excedido la marca temporal
-        borrarReservasCaducadas($conexion);
-        // Buscar reserva ópyima
-        [$ok, $habitacion] = comprobarReserva($conexion, $_SESSION["datos-reserva"]["numeropersonas"], $_SESSION["datos-reserva"]["entrada"], $_SESSION["datos-reserva"]["salida"]);
-        if($ok){
-            // Crear tupla de reserva con estado "pendiente", marca de tiempo actual y los datos del formulario
-            if($_SESSION["rol"] == "Cliente"){
-                $email = $_SESSION["email"];
+    // Modo reserva
+    if(!isset($_POST["reforma"])){
+        [$_SESSION["errores-reserva"], $_SESSION["datos-reserva"]] = validarDatosReserva();
+        // Si todo esta correcto inciar el proceso de reserva
+        if(empty($_SESSION["errores-reserva"])){
+            // Primero eliminamos los que hayan excedido la marca temporal
+            borrarReservasCaducadas($conexion);
+            // Buscar reserva óptima
+            [$ok, $habitacion] = comprobarReserva($conexion, $_SESSION["datos-reserva"]["numeropersonas"], $_SESSION["datos-reserva"]["entrada"], $_SESSION["datos-reserva"]["salida"]);
+            if($ok){
+                // Crear tupla de reserva con estado "pendiente", marca de tiempo actual y los datos del formulario
+                if($_SESSION["rol"] == "Cliente"){
+                    $email = $_SESSION["email"];
+                } else {
+                    $email = $_POST["usuario-reserva"];
+                }
+                $_SESSION["datos-reserva"]["email"] = $email;
+                $resultado = crearReservaPendiente($conexion, $habitacion, $email, $_SESSION["datos-reserva"]);
+                if($resultado){
+                    $_SESSION["tiempo-inicio-reserva"] = time();
+                    $_SESSION["reserva"] = true;
+                    $_SESSION["id-reserva"] = obtenerIdReserva($conexion, $habitacion, $email, $_SESSION["datos-reserva"]);
+                }
             } else {
-                $email = $_POST["usuario-reserva"];
+                $reserva = false;
             }
-            $_SESSION["datos-reserva"]["email"] = $email;
-            $resultado = crearReservaPendiente($conexion, $habitacion, $email, $_SESSION["datos-reserva"]);
-            if($resultado){
-                $_SESSION["tiempo-inicio-reserva"] = time();
-                $_SESSION["reserva"] = true;
-                $_SESSION["id-reserva"] = obtenerIdReserva($conexion, $habitacion, $email, $_SESSION["datos-reserva"]);
+        }
+    } else { // Modo reforma
+        [$_SESSION["errores-reserva"], $_SESSION["datos-reserva"]] = validarDatosReforma();
+        if(empty($_SESSION["errores-reserva"])){
+            // Primero eliminamos los que hayan excedido la marca temporal
+            borrarReservasCaducadas($conexion);
+            $disponible = comprobarDisponibilidad($conexion, $_SESSION["datos-reserva"]["habitacion-reforma"], $_SESSION["datos-reserva"]["entrada"], $_SESSION["datos-reserva"]["salida"]);
+            if(!$disponible){
+                $mantenimiento = false;
+            } else {
+                $mantenimiento = true;
+                // Crear la reserva de reforma
+                $ok = establecerHabitacionReforma($conexion, $_SESSION["datos-reserva"]["habitacion-reforma"], $_SESSION["datos-reserva"]["entrada"], $_SESSION["datos-reserva"]["salida"]);
+                if($ok){
+                    $mantenimiento_confirmado = true;
+                } else {
+                    $mantenimiento_confirmado = false;
+                }
             }
-        } else {
-            $reserva = false;
+            if(isset($_SESSION["datos-reserva"])) unset($_SESSION["datos-reserva"]);
         }
     }
 }
@@ -281,7 +304,19 @@ if(isset($_GET["pagina"])) {
             if($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente"){
                 if(!isset($_SESSION["reserva"]) || $_SESSION["reserva"] == false){
                     $_SESSION["usuarios"] = getUsuarios($conexion);
-                    HTML_formulario_reserva($_SESSION["usuarios"]);
+                    $_SESSION["habitaciones"] = getHabitaciones($conexion)[1];
+                    HTML_formulario_reserva($_SESSION["usuarios"], $_SESSION["habitaciones"]);
+                    if(isset($mantenimiento)){
+                        if($mantenimiento){
+                            if($mantenimiento_confirmado){
+                                HTML_success_mantenimiento_confirmado();
+                            } else {
+                                HTML_error_mantenimiento_confirmado();
+                            }
+                        } else {
+                            HTML_error_mantenimiento();
+                        }
+                    }
                     if(isset($reserva)){
                         HTML_error_reserva();
                     }

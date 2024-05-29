@@ -162,6 +162,14 @@ footer a:hover {
     padding: 20px; 
     margin: auto;
 }
+
+.success-path h2 {
+    text-align: center; 
+    background-color: greenyellow; 
+    color: white;
+    padding: 20px; 
+    margin: auto;
+}
 /* ------------------- */
 
 .galeria {
@@ -350,6 +358,10 @@ fieldset label {
     width: 250px;
     margin-right: 10px;
     font-weight: bold;
+}
+
+#reforma-label{
+    width:500px;
 }
 
 fieldset input[type="text"],

@@ -541,13 +541,18 @@ function HTML_salir_edicion(){
     HTML;
 }
 
-function HTML_formulario_reserva($usuarios){ ?>
+function HTML_formulario_reserva($usuarios, $habitaciones){ ?>
     <section class="registro-reserva">
         <form action="" method="post" novalidate>
             <fieldset>
-                <legend>Reserva de Habitaciones</legend>
+                <legend id="legend-reserva">Reserva de Habitaciones</legend>
+                <legend id="legend-reforma" style="display: none;">Reforma de Habitaciones</legend>
                 <?php if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") { ?>
                     <p>
+                        <input type="checkbox" id="idreforma" name="reforma">
+                        <label for="idreforma" id="reforma-label">Establecer habitación en estado de reforma</label>
+                    </p>
+                    <p id="usuario-select-container">
                         <label for="idusuario">Seleccionar Usuario:</label>
                         <select name="usuario-reserva" id="idusuario">
                             <?php
@@ -560,25 +565,41 @@ function HTML_formulario_reserva($usuarios){ ?>
                             ?>
                         </select>
                     </p>
+                    <p id="room-select-container" style="display: none;">
+                        <label for="idhabitacion">Seleccionar Habitación:</label>
+                        <select name="habitacion-reforma" id="idhabitacion">
+                            <?php
+                            if ($habitaciones) {
+                                while ($habitacion = $habitaciones->fetch_assoc()) {
+                                    echo "<option value='" . $habitacion["Habitacion"] . "'>" . $habitacion["Habitacion"] . "</option>";
+                                }
+                            }
+                            ?>
+                        </select>
+                    </p>
+                    <?php if (isset($_SESSION["errores-reserva"]["habitacion-reforma"])) echo $_SESSION["errores-reserva"]["habitacion-reforma"]; ?>
+                    <p id="reforma-marcada-container" style="display: none;">
+                        <input type="hidden" name="enviar-reserva" value="1">
+                    </p>
                 <?php } ?>
-                <p>
+                <p id="numeropersonas-container">
                     <label for="idnumeropersonas">Número de Personas:</label>
-                    <input type="text" id="idnumeropersonas" name="numeropersonas" value=<?php if (isset($_SESSION["datos-reserva"]["numeropersonas"])) echo $_SESSION["datos-reserva"]["numeropersonas"] ?>>
+                    <input type="text" id="idnumeropersonas" name="numeropersonas" value="<?php if (isset($_SESSION["datos-reserva"]["numeropersonas"])) echo $_SESSION["datos-reserva"]["numeropersonas"]; ?>">
                 </p>
-                <?php if (isset($_SESSION["errores-reserva"]["numeropersonas"])) echo $_SESSION["errores-reserva"]["numeropersonas"] ?>
+                <?php if (isset($_SESSION["errores-reserva"]["numeropersonas"])) echo $_SESSION["errores-reserva"]["numeropersonas"]; ?>
                 <p>
                     <label for="identrada">Fecha de Entrada:</label>
-                    <input type="date" id="identrada" name="entrada" value=<?php if (isset($_SESSION["datos-reserva"]["entrada"])) echo $_SESSION["datos-reserva"]["entrada"] ?>>
+                    <input type="date" id="identrada" name="entrada" value="<?php if (isset($_SESSION["datos-reserva"]["entrada"])) echo $_SESSION["datos-reserva"]["entrada"]; ?>">
                 </p>
-                <?php if (isset($_SESSION["errores-reserva"]["entrada"])) echo $_SESSION["errores-reserva"]["entrada"] ?>
+                <?php if (isset($_SESSION["errores-reserva"]["entrada"])) echo $_SESSION["errores-reserva"]["entrada"]; ?>
                 <p>
                     <label for="idsalida">Fecha de Salida:</label>
-                    <input type="date" id="idsalida" name="salida" value=<?php if (isset($_SESSION["datos-reserva"]["salida"])) echo $_SESSION["datos-reserva"]["salida"] ?>>
+                    <input type="date" id="idsalida" name="salida" value="<?php if (isset($_SESSION["datos-reserva"]["salida"])) echo $_SESSION["datos-reserva"]["salida"]; ?>">
                 </p>
-                <?php if (isset($_SESSION["errores-reserva"]["salida"])) echo $_SESSION["errores-reserva"]["salida"] ?>
-                <p>
+                <?php if (isset($_SESSION["errores-reserva"]["salida"])) echo $_SESSION["errores-reserva"]["salida"]; ?>
+                <p id="comentario-container">
                     <label for="idcomentario">Comentario:</label>
-                    <textarea id="idcomentario" name="comentario"><?php if (isset($_SESSION["datos-reserva"]["comentario"])) echo $_SESSION["datos-reserva"]["comentario"] ?></textarea>
+                    <textarea id="idcomentario" name="comentario"><?php if (isset($_SESSION["datos-reserva"]["comentario"])) echo $_SESSION["datos-reserva"]["comentario"]; ?></textarea>
                 </p>
                 <div class="boton">
                     <input type="submit" value="Enviar Reserva" name="enviar-reserva" id="boton-enviar">
@@ -586,6 +607,7 @@ function HTML_formulario_reserva($usuarios){ ?>
             </fieldset>
         </form>
     </section>
+    <?php if(isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo"<script src='formularioHabitaciones.js'></script>" ?>
 <?php }
 
 function HTML_error_reserva()
@@ -631,6 +653,36 @@ function HTML_error_reserva_expirada(){
         <main>
             <div class="error-path">
                 <h2>Excediste el tiempo de espera, reserva expirada</h2>
+            </div>
+        </main>
+    HTML;
+}
+
+function HTML_error_mantenimiento(){
+    echo <<< HTML
+        <main>
+            <div class="error-path">
+                <h2>La habitación está reservada para esa fecha (Reubique primero al cliente)</h2>
+            </div>
+        </main>
+    HTML;
+}
+
+function HTML_error_mantenimiento_confirmado(){
+    echo <<< HTML
+        <main>
+            <div class="error-path">
+                <h2>Hubo un error durante la creación del mantenimiento</h2>
+            </div>
+        </main>
+    HTML;
+}
+
+function HTML_success_mantenimiento_confirmado(){
+    echo <<< HTML
+        <main>
+            <div class="success-path">
+                <h2>Se estableció el mantenimiento con éxito</h2>
             </div>
         </main>
     HTML;
