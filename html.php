@@ -57,7 +57,9 @@ function HTML_nav()
             <li><a href="index.php?pagina=servicios">Servicios</a></li>
             <?php if (!$_SESSION["iniciado-sesion"]) echo "<li><a href='index.php?pagina=registro'>Registro</a></li>" ?>
             <?php if ($_SESSION["rol"] == "Recepcionista") echo "<li><a href='index.php?pagina=gestion-habitaciones'>Gestión Habitaciones</a></li>" ?>
-            <?php if ($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente") echo "<li><a href='index.php?pagina=reservas'>Reservas</a></li>" ?>
+            <?php if ($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente") echo "<li><a href='index.php?pagina=reservas'>Reservar</a></li>" ?>
+            <?php if ($_SESSION["rol"] == "Recepcionista") echo "<li><a href='index.php?pagina=lista-reservas'>Gestión Reservas</a></li>" ?>
+            <?php if ($_SESSION["rol"] == "Cliente") echo "<li><a href='index.php?pagina=lista-reservas'>Mis Reservas</a></li>" ?>
         </ul>
         <ul class="sesion-pantalla-reducida">
             <li><a href=""><?php if (isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) echo "LogIn";
@@ -426,9 +428,9 @@ function HTML_form_habitaciones()
                 <?php if (isset($_SESSION["errores-habitacion"]["descripcion"])) echo $_SESSION["errores-habitacion"]["descripcion"] ?>
                 <p>
                     <label for="foto">Fotografía:</label>
-                    <input type="file" id="foto" name="fotos[]" multiple <?php echo $disable ?> <?php if(isset($_SESSION["modificar-habitacion"]) && $_SESSION["modificar-habitacion"]) echo "disabled" ?>>
+                    <input type="file" id="foto" name="fotos[]" multiple <?php echo $disable ?> <?php if (isset($_SESSION["modificar-habitacion"]) && $_SESSION["modificar-habitacion"]) echo "disabled" ?>>
                 </p>
-                <?php if(isset($_SESSION["errores-habitacion"]["fotos"])) echo $_SESSION["errores-habitacion"]["fotos"] ?>
+                <?php if (isset($_SESSION["errores-habitacion"]["fotos"])) echo $_SESSION["errores-habitacion"]["fotos"] ?>
                 <div id="previsualizaciones"></div>
                 <?php if (isset($_SESSION["datos-habitacion"]["fotos"]) && is_array($_SESSION["datos-habitacion"]["fotos"])) {
                     foreach ($_SESSION["datos-habitacion"]["fotos"] as $index => $imagen_base64) {
@@ -505,7 +507,7 @@ function HTML_editar_fotos_habitacion()
                 <input type="submit" value="Enviar Fotos" name="enviar-fotos" id="boton-enviar">
             </div>
             <div class="listado-habitaciones"></div>
-            </fieldset>
+        </fieldset>
     </form>
     <section class="listado-habitaciones">
         <table>
@@ -515,8 +517,8 @@ function HTML_editar_fotos_habitacion()
                 <th>Eliminar</th>
             </tr>
             <?php
-            if(!empty($_SESSION["fotos"])){
-                foreach($_SESSION["fotos"] as $foto){
+            if (!empty($_SESSION["fotos"])) {
+                foreach ($_SESSION["fotos"] as $foto) {
                     echo "<tr>";
                     echo "<td>" . $foto["Habitacion"] . "</td>";
                     echo "<td><img src='data:image/jpeg;base64," . $foto["Imagen"] . "' style='max-width:100px;'></td>";
@@ -531,7 +533,8 @@ function HTML_editar_fotos_habitacion()
     </section>
 <?php }
 
-function HTML_salir_edicion(){
+function HTML_salir_edicion()
+{
     echo <<< HTML
         <form action="" method="post">
             <div class="boton">
@@ -541,7 +544,8 @@ function HTML_salir_edicion(){
     HTML;
 }
 
-function HTML_formulario_reserva($usuarios, $habitaciones){ ?>
+function HTML_formulario_reserva($usuarios, $habitaciones)
+{ ?>
     <section class="registro-reserva">
         <form action="" method="post" novalidate>
             <fieldset>
@@ -607,7 +611,7 @@ function HTML_formulario_reserva($usuarios, $habitaciones){ ?>
             </fieldset>
         </form>
     </section>
-    <?php if(isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo"<script src='formularioHabitaciones.js'></script>" ?>
+    <?php if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo "<script src='formularioHabitaciones.js'></script>" ?>
 <?php }
 
 function HTML_error_reserva()
@@ -621,7 +625,8 @@ function HTML_error_reserva()
     HTML;
 }
 
-function HTML_confirmar_reserva($datos_reserva, $email) { ?>
+function HTML_confirmar_reserva($datos_reserva, $email)
+{ ?>
     <section class="tarjeta">
         <h2>Confirmación de Reserva</h2>
         <section>
@@ -648,7 +653,8 @@ function HTML_confirmar_reserva($datos_reserva, $email) { ?>
     </section>
 <?php }
 
-function HTML_error_reserva_expirada(){
+function HTML_error_reserva_expirada()
+{
     echo <<< HTML
         <main>
             <div class="error-path">
@@ -658,7 +664,8 @@ function HTML_error_reserva_expirada(){
     HTML;
 }
 
-function HTML_error_mantenimiento(){
+function HTML_error_mantenimiento()
+{
     echo <<< HTML
         <main>
             <div class="error-path">
@@ -668,7 +675,8 @@ function HTML_error_mantenimiento(){
     HTML;
 }
 
-function HTML_error_mantenimiento_confirmado(){
+function HTML_error_mantenimiento_confirmado()
+{
     echo <<< HTML
         <main>
             <div class="error-path">
@@ -678,7 +686,8 @@ function HTML_error_mantenimiento_confirmado(){
     HTML;
 }
 
-function HTML_success_mantenimiento_confirmado(){
+function HTML_success_mantenimiento_confirmado()
+{
     echo <<< HTML
         <main>
             <div class="success-path">
@@ -687,5 +696,95 @@ function HTML_success_mantenimiento_confirmado(){
         </main>
     HTML;
 }
+
+function HTML_gestion_reservas($conexion)
+{ ?>
+    <form action="" method="post">
+        <fieldset>
+            <legend>Filtros</legend>
+            <p>
+                <label id="label-paginacion" for="idpaginacion">Número de Reservas a Mostrar:</label>
+                <input type="number" id="idpaginacion" name="paginacion">
+            </p>
+            <div class="boton">
+                <input type="submit" value="Aplicar Filtros" name="filtros-reservas" id="boton-enviar">
+            </div>
+        </fieldset>
+    </form>
+    <section class="listado-reservas">
+        <table>
+            <tr>
+                <?php if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo "<th>Usuario</th>"; ?>
+                <th>Habitación</th>
+                <th>Nº Personas</th>
+                <th>Fecha de Entrada</th>
+                <th>Fecha de Salida</th>
+                <?php if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo "<th>Estado</th>"; ?>
+                <th>Comentario</th>
+                <th>Precio</th>
+                <th>Modificar Comentario</th>
+                <th>Eliminar</th>
+            </tr>
+            <?php
+            $total_paginas = 0;
+            if (isset($_SESSION["rol"])) {
+                if ($_SESSION["rol"] == "Recepcionista") {
+                    $numero_tuplas = contarReservas($conexion);
+                } else {
+                    $numero_tuplas = contarReservasUsuario($conexion, $_SESSION["email"]);
+                }
+                $total_paginas = ceil($numero_tuplas[1]["count"] / $_COOKIE["paginacion"]);
+                if (isset($_GET["pagina_actual"])) {
+                    if ($_GET["pagina_actual"] > 0 && $_GET["pagina_actual"] <= $total_paginas) {
+                        $pagina_actual = $_GET["pagina_actual"];
+                    } else {
+                        $pagina_actual = 1;
+                    }
+                } else {
+                    $pagina_actual = 1;
+                }
+                if ($_SESSION["rol"] == "Recepcionista") {
+                    $reservas = getReservas($conexion, $pagina_actual, $_COOKIE["paginacion"]);
+                } else {
+                    $reservas = getReservasUsuario($conexion, $_SESSION["email"], $pagina_actual, $_COOKIE["paginacion"]);
+                }
+                if ($reservas[0]) {
+                    $reservas = $reservas[1];
+                    foreach ($reservas as $fila) {
+                        echo "<tr>";
+                        if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo "<td>" . $fila["email"] . "</td>";
+                        echo "<td>" . $fila["Habitacion"] . "</td>";
+                        echo "<td>" . $fila["Personas"] . "</td>";
+                        echo "<td>" . $fila["Entrada"] . "</td>";
+                        echo "<td>" . $fila["Salida"] . "</td>";
+                        if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo "<td>" . $fila["Estado"] . "</td>";
+                        echo "<td>" . $fila["Comentario"] . "</td>";
+                        echo "<td>" . $fila["Precio"] . "</td>";
+                        echo "<form action='' method='post'>";
+                        echo "<input type='hidden' name='id-reserva' value='" . $fila["id"] . "'>";
+                        echo "<td><input type='submit' name='modificar-comentario' value='Modificar Comentario'></td>";
+                        echo "<td><input type='submit' name='borrar-reserva' value='Borrar'></td>";
+                        echo "</form>";
+                        echo "</tr>";
+                    }
+                } else {
+                    if ($_SESSION["rol"] == "Recepcionista") {
+                        echo "<tr><td colspan='10'>No hay reservas registradas</td></tr>";
+                    } else {
+                        echo "<tr><td colspan='8'>No hay reservas registradas</td></tr>";
+                    }
+                }
+            }
+            ?>
+        </table>
+    </section>
+    <div class="paginacion">
+            <?php
+            for ($i = 1; $i <= $total_paginas; $i++) {
+                echo "<a href='index.php?pagina=lista-reservas&pagina_actual=$i'>$i</a>";
+            }
+            ?>
+    </div>
+<?php }
 
 ?>

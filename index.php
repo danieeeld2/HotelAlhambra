@@ -23,6 +23,11 @@ if(!isset($_SESSION["ultima-pag-visitada"])){
     $_SESSION["ultima-pag-visitada"] = "inicio";
 }
 
+// Crear cookie para paginación
+if(!isset($_COOKIE["paginacion"])){
+    setcookie("paginacion", 3, time() + (86400 * 30), "/");
+}
+
 ///////////////////////////////////// GESTION DE LOGIN ///////////////////////////////////////
 
 // Comprobamos si se ha enviado el formulario de login
@@ -256,6 +261,12 @@ if((isset($_SESSION["reserva"]) && $_SESSION["reserva"] == true)){
     }
 }
 
+///////////////////////////////////// GESTION DE LISTA DE RESERVAS ///////////////////////////////////////
+if(isset($_POST["filtros-reservas"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    setcookie("paginacion", $_POST["paginacion"], time() + (86400 * 30), "/");
+    $_COOKIE['paginacion'] = $_POST["paginacion"];
+}
+
 
 HTML_init();
 HTML_header();
@@ -326,6 +337,13 @@ if(isset($_GET["pagina"])) {
                 } else {
                     HTML_confirmar_reserva(obtenerDatosReserva($conexion, $_SESSION["id-reserva"]), $_SESSION["datos-reserva"]["email"]);
                 }
+            } else {
+                HTML_error_permisos();
+            }
+            break;
+        case "lista-reservas":
+            if($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente"){
+                HTML_gestion_reservas($conexion);
             } else {
                 HTML_error_permisos();
             }

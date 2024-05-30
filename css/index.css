@@ -369,6 +369,7 @@ fieldset input[type="email"],
 fieldset input[type="password"],
 fieldset input[type="date"],
 fieldset input[type="file"],
+fieldset input[type="number"],
 fieldset textarea,
 fieldset select {
     width: calc(100% - 170px);
@@ -470,6 +471,61 @@ fieldset select {
     border: 1px solid black;
     cursor: pointer;
 } 
+
+.listado-reservas {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.listado-reservas table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.listado-reservas th, .listado-reservas td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.listado-reservas th {
+    background-color: #f2f2f2;
+}
+
+#label-paginacion {
+    width: 500px;
+}
+
+.paginacion {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.paginacion a {
+    margin: 0;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #007bff;
+    border: 1px solid #ddd;
+    border-left: none;
+    background-color: white;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.paginacion a:first-child {
+    border-left: 1px solid #ddd;
+}
+
+.paginacion a:hover {
+    background-color: #f2f2f2;
+}
+
+.paginacion a.active {
+    background-color: #007bff;
+    color: white;
+}
 
 
 /* ------------------- Media Queries ------------------- */

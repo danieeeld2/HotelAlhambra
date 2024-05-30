@@ -293,5 +293,89 @@ function borrarFotoID($conexion, $id){
     return true;
 }
 
+function contarReservas($conexion){
+    $query = <<< EOD
+        SELECT COUNT(*) as count FROM reservasHotel
+    EOD;
+    $resultado = $conexion->query($query);
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return [false, null];
+    }
+    $resultado = $resultado->fetch_assoc();
+    return [true, $resultado];
+}
+
+function contarReservasUsuario($conexion, $email){
+    $query = <<< EOD
+        SELECT COUNT(*) as count FROM reservasHotel WHERE email = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return [false, null];
+    }
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return [false, null];
+    } else {
+        $resultado = $resultado->fetch_assoc();
+        $stmt->close();
+        return [true, $resultado];
+    }
+}
+
+function getReservas($conexion, $offset, $limit){
+    $query = <<< EOD
+        SELECT * FROM reservasHotel LIMIT ? , ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return [false, null];
+    }
+    $stmt->bind_param("ii", $offset, $limit);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return [false, null];
+    } else {
+        $reservas = $resultado->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $resultado->close();
+        return [true, $reservas];
+    }
+}
+
+function getReservasUsuario($conexion, $email, $offset, $limit){
+    $query = <<< EOD
+        SELECT * FROM reservasHotel WHERE email = ? LIMIT ? , ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return [false, null];
+    }
+    $stmt->bind_param("sii", $email, $offset, $limit);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return [false, null];
+    } else {
+        $reservas = $resultado->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $resultado->close();
+        return [true, $reservas];
+    }
+}
+
 
 ?>
