@@ -747,8 +747,8 @@ function HTML_gestion_reservas($conexion)
                 <th>Fecha de Entrada</th>
                 <th>Fecha de Salida</th>
                 <?php if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo "<th>Estado</th>"; ?>
-                <th>Comentario</th>
                 <th>Precio</th>
+                <th>Comentario</th>
                 <th>Modificar Comentario</th>
                 <th>Eliminar</th>
             </tr>
@@ -778,16 +778,17 @@ function HTML_gestion_reservas($conexion)
                     foreach ($reservas as $fila) {
                         echo "<tr>";
                         if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo "<td>" . $fila["email"] . "</td>";
-                        echo "<td>" . $fila["Habitacion"] . "</td>";
+                        echo "<td class='habitacion' title=" .$fila["Marca"] .">" . $fila["Habitacion"] . "</td>";
                         echo "<td>" . $fila["Personas"] . "</td>";
                         echo "<td>" . $fila["Entrada"] . "</td>";
                         echo "<td>" . $fila["Salida"] . "</td>";
                         if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo "<td>" . $fila["Estado"] . "</td>";
-                        echo "<td>" . $fila["Comentario"] . "</td>";
                         echo "<td>" . $fila["Precio"] . "</td>";
                         echo "<form action='' method='post'>";
+                        echo "<td class='comentario'>" . $fila["Comentario"] . "</td>";
+                        echo "<td class='nuevo-comentario' style='display:none;'><input type='text' name='nuevo-comentario'></td>";
                         echo "<input type='hidden' name='id-reserva' value='" . $fila["id"] . "'>";
-                        echo "<td><input type='submit' name='modificar-comentario' value='Modificar Comentario'></td>";
+                        echo "<td><button type='button' class='editar-comentario'>Editar</button><input type='submit' name='modificar-comentario' value='Modificar Comentario' class='modificar-comentario' style='display:none;'></td>";
                         echo "<td><input type='submit' name='borrar-reserva' value='Borrar'></td>";
                         echo "</form>";
                         echo "</tr>";
@@ -810,6 +811,7 @@ function HTML_gestion_reservas($conexion)
             }
             ?>
     </div>
+    <?php if(isset($_GET["pagina"]) && $_GET["pagina"] == "lista-reservas") echo "<script src='tablaReservas.js'></script>"; ?>
 <?php }
 
 ?>

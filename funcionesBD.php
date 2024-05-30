@@ -759,4 +759,16 @@ function obtenerMaxFechaSalida($conexion) {
     return [true, $resultado];
 }
 
+// Función para dado el id de una reserva, modificar su comentario
+function modificarComentario($conexion, $id, $comentario) {
+    $query = <<< EOD
+        UPDATE reservasHotel SET Comentario = ? WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("si", $comentario, $id);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+}
+
 ?>

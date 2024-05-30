@@ -550,96 +550,15 @@ fieldset.rango-fechas legend {
     color: white;
 }
 
-
-/* ------------------- Media Queries ------------------- */
-
-@media (max-width: 900px) {
-    nav {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-    }
-
-    nav ul {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .sesion-pantalla-reducida {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .sesion-pantalla-reducida a {
-        color: #6d7983;
-        font-weight: bold;
-    }
-
-    .sesion-pantalla-reducida a:hover {
-        text-decoration: underline;
-        text-decoration-color: #B7C4CF;
-        text-decoration-thickness: 4px;
-    }
-
-    .informacion-2nivel h2 {
-        font-size: 17px;
-        text-align: center;
-        text-decoration: underline;
-    }
-
-    .container {
-        flex-direction: column;
-    }
-
-    .zona-lateral {
-        flex-basis: 100%;
-        max-width: 100%;
-        margin-left: 0;
-        order: 1;
-    }
-
-    .inicio-sesion {
-        display: none;
-    }
-
-    .imagen {
-        width: 100%;
-    }
-
-    #bañera {
-        display: none;
-    }
+.tooltip {
+    display: none;
+    position: fixed;
+    background-color: white;
+    border: 1px solid black;
+    padding: 10px;
+    z-index: 1000;
 }
 
-@media (max-width: 650px) {
-    header {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .zona-lateral {
-        display: none;
-    }
-
-    .logo-image img {
-        width: 200px;
-    }
-
-    .contact-info img {
-        display: none;
-    }
-
-    .imagen {
-        width: 100%;
-    }
-    
-    .contacto-reducido {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .contacto-reducido img {
-        max-width: 200px;
-    }
+.table-row {
+    position: relative;
 }

@@ -273,7 +273,14 @@ if(isset($_POST["filtros-reservas"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
 if(isset($_POST["borrar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     borrarReserva($conexion, $_POST["id-reserva"]);
 }
-
+// Comprobar si se ha enviado el formulario de cambiar comentario de reserva
+if(isset($_POST["modificar-comentario"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $comentario = "";
+    if(!empty($_POST["nuevo-comentario"])){
+        $comentario = checkInyection($_POST["nuevo-comentario"]);
+    }
+    $resultado = modificarComentario($conexion, $_POST["id-reserva"], $comentario);
+}
 
 
 HTML_init();
