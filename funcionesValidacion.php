@@ -301,7 +301,7 @@ function validarDatosReserva() {
         if(empty($_POST["comentario"])){
             $datos["comentario"] = "";
         } else {
-            $datos["comentario"] = $_POST["comentario"];
+            $datos["comentario"] = checkInyection($_POST["comentario"]);
         }
 
         // Comprobamos si no hay errores
