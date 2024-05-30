@@ -573,5 +573,190 @@ function obtenerCapacidad($conexion, $habitacion) {
     }
 }
 
+function getReservasConFiltro($conexion, $offset, $limit, $ordenamiento, $filtroComentario, $fechaInicio, $fechaFin, $email) {
+    // Construir la consulta SQL base
+    $query = "SELECT * FROM reservasHotel WHERE 1";
+
+    // Agregar filtro de comentario si se especifica
+    if (!empty($filtroComentario)) {
+        $query .= " AND Comentario LIKE ?";
+        $filtroComentario = "%" . $filtroComentario . "%";
+    }
+
+    // Agregar filtro de fecha si se especifican fechas
+    if (!empty($fechaInicio) && !empty($fechaFin)) {
+        $query .= " AND Entrada >= ? AND Salida <= ?";
+    }
+
+    // Agregar filtro de email si se especifica
+    if (!empty($email)) {
+        $query .= " AND Email = ?";
+    }
+
+    // Agregar ordenamiento
+    switch ($ordenamiento) {
+        case 'antiguedad_asc':
+            $query .= " ORDER BY Marca ASC";
+            break;
+        case 'antiguedad_desc':
+            $query .= " ORDER BY Marca DESC";
+            break;
+        case 'duracion_asc':
+            $query .= " ORDER BY DATEDIFF(Salida, Entrada) ASC";
+            break;
+        case 'duracion_desc':
+            $query .= " ORDER BY DATEDIFF(Salida, Entrada) DESC";
+            break;
+        default:
+            $query .= " ORDER BY Marca ASC";
+            break;
+    }
+
+    // Agregar límite y offset
+    $query .= " LIMIT ?, ?";
+
+    // Preparar la consulta
+    $stmt = $conexion->prepare($query);
+    if (!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return [false, null];
+    }
+
+    // Bindear los parámetros
+    $bindParams = array();
+    $bindParamsTypes = '';
+
+    if (!empty($filtroComentario)) {
+        $bindParams[] = &$filtroComentario;
+        $bindParamsTypes .= 's';
+    }
+    if (!empty($fechaInicio) && !empty($fechaFin)) {
+        $bindParams[] = &$fechaInicio;
+        $bindParams[] = &$fechaFin;
+        $bindParamsTypes .= 'ss';
+    }
+    if (!empty($email)) {
+        $bindParams[] = &$email;
+        $bindParamsTypes .= 's';
+    }
+
+    // Agregar tipos de datos para offset y limit
+    $bindParamsTypes .= 'ii';
+    $bindParams[] = &$offset;
+    $bindParams[] = &$limit;
+
+    // Hacer la llamada bind_param de manera dinámica
+    if (!empty($bindParams)) {
+        $bindParams = array_merge(array($bindParamsTypes), $bindParams);
+        $ref = new ReflectionClass('mysqli_stmt');
+        $method = $ref->getMethod("bind_param");
+        $method->invokeArgs($stmt, $bindParams);
+    }
+
+    // Ejecutar la consulta
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    
+    if ($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return [false, null];
+    } else {
+        $reservas = $resultado->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $resultado->close();
+        return [true, $reservas];
+    }
+}
+
+function contarTuplasFiltro($conexion, $filtroComentario, $fechaInicio, $fechaFin, $email) {
+    // Construir la consulta SQL base
+    $query = "SELECT COUNT(*) as count FROM reservasHotel WHERE 1";
+
+    // Agregar filtro de comentario si se especifica
+    if (!empty($filtroComentario)) {
+        $query .= " AND Comentario LIKE ?";
+        $filtroComentario = "%" . $filtroComentario . "%";
+    }
+
+    // Agregar filtro de fecha si se especifican fechas
+    if (!empty($fechaInicio) && !empty($fechaFin)) {
+        $query .= " AND Entrada >= ? AND Salida <= ?";
+    }
+
+    // Agregar filtro de email si se especifica
+    if (!empty($email)) {
+        $query .= " AND Email = ?";
+    }
+
+    // Preparar la consulta
+    $stmt = $conexion->prepare($query);
+    if (!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return [false, null];
+    }
+
+    // Bindear los parámetros
+    $bindParams = array();
+    $bindParamsTypes = '';
+
+    if (!empty($filtroComentario)) {
+        $bindParams[] = &$filtroComentario;
+        $bindParamsTypes .= 's';
+    }
+    if (!empty($fechaInicio) && !empty($fechaFin)) {
+        $bindParams[] = &$fechaInicio;
+        $bindParams[] = &$fechaFin;
+        $bindParamsTypes .= 'ss';
+    }
+    if (!empty($email)) {
+        $bindParams[] = &$email;
+        $bindParamsTypes .= 's';
+    }
+
+    // Hacer la llamada bind_param de manera dinámica
+    if (!empty($bindParams)) {
+        $bindParams = array_merge(array($bindParamsTypes), $bindParams);
+        $ref = new ReflectionClass('mysqli_stmt');
+        $method = $ref->getMethod("bind_param");
+        $method->invokeArgs($stmt, $bindParams);
+    }
+
+    // Ejecutar la consulta
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc();
+    $stmt->close();
+    $resultado->close();
+    return $count;
+}
+
+// Obtiene el mínimo de la fecha de entrada de todas las reservas
+function obtenerMinFechaEntrada($conexion) {
+    $query = <<< EOD
+        SELECT MIN(Entrada) as minFecha FROM reservasHotel
+    EOD;
+    $resultado = $conexion->query($query);
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return [false, null];
+    }
+    $resultado = $resultado->fetch_assoc();
+    return [true, $resultado];
+}
+
+// Obtiene el máximo de la fecha de salida de todas las reservas
+function obtenerMaxFechaSalida($conexion) {
+    $query = <<< EOD
+        SELECT MAX(Salida) as maxFecha FROM reservasHotel
+    EOD;
+    $resultado = $conexion->query($query);
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return [false, null];
+    }
+    $resultado = $resultado->fetch_assoc();
+    return [true, $resultado];
+}
 
 ?>

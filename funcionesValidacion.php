@@ -361,4 +361,62 @@ function validarDatosReforma() {
 
     return [$errores, $datos];
 }
+
+function validarFormularioFiltro($conexion){
+    // Inicializamos los arrays de errores y datos
+    $datos = array();
+    $datos_cookie = explode(",", $_COOKIE["filtros-reserva"]);
+
+    if(isset($_POST["filtros-reservas"]) && $_SERVER["REQUEST_METHOD"] == "POST"){
+        // Comprobamos que la paginación no sea nula
+        if(empty($_POST["paginacion"])){
+            $datos["paginacion"] = $datos_cookie[0];
+        } else {
+            // Comprobar que es un número entero
+            if(!is_numeric($_POST["paginacion"]) || !is_int($_POST["paginacion"] + 0)){
+                $datos["paginacion"] = $datos_cookie[0];
+            }else{
+                $datos["paginacion"] = $_POST["paginacion"];
+            }
+        }
+        // Comprobamos que el orden no sea nulo
+        if(empty($_POST["ordenamiento"])){
+            $datos["ordenamiento"] = $datos_cookie[1];
+        } else {
+            // Comprobar que es una de las opciones permitidas
+            if($_POST["ordenamiento"] != "antiguedad_asc" && $_POST["ordenamiento"] != "antiguedad_desc" && $_POST["ordenamiento"] != "duracion_asc" && $_POST["ordenamiento"] != "duracion_desc"){
+                $datos["ordenamiento"] = $datos_cookie[1];
+            }else{
+                $datos["ordenamiento"] = $_POST["ordenamiento"];
+            }
+        }
+        // Comprobamos que se haya establecido un rango de fechas
+        if(empty($_POST["fecha_inicio"]) && empty($_POST["fecha_fin"])){
+            $datos["fecha_inicio"] = "";
+            $datos["fecha_fin"] = "";
+        } else {
+            if(empty($_POST["fecha_inicio"])){
+                // Como necesitamos un rango, le paso el mínimo de la tabla
+                $datos["fecha_inicio"] = obtenerMinFechaEntrada($conexion)[1]["minFecha"];
+            } else {
+                $datos["fecha_inicio"] = $_POST["fecha_inicio"];
+            }
+            if(empty($_POST["fecha_fin"])){
+                // Como necesitamos un rango, le paso el máximo de la tabla
+                $datos["fecha_fin"] = obtenerMaxFechaSalida($conexion)[1]["maxFecha"];
+            } else {
+                $datos["fecha_fin"] = $_POST["fecha_fin"];
+            }
+        }
+        // Comprobar que el comentario no sea nulo
+        if(empty($_POST["comentario"])){
+            $datos["comentario"] = "";
+        } else {
+            $datos["comentario"] = checkInyection($_POST["comentario"]);
+        }
+    }
+
+    return $datos;
+}
+
 ?>

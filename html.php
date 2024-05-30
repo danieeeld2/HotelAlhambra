@@ -700,11 +700,38 @@ function HTML_success_mantenimiento_confirmado()
 function HTML_gestion_reservas($conexion)
 { ?>
     <form action="" method="post">
+        <?php 
+        $valores_cookie = explode(",", $_COOKIE["filtros-reserva"]);
+        ?>
         <fieldset>
             <legend>Filtros</legend>
             <p>
                 <label id="label-paginacion" for="idpaginacion">Número de Reservas a Mostrar:</label>
-                <input type="number" id="idpaginacion" name="paginacion">
+                <input type="number" id="idpaginacion" name="paginacion" value="<?php echo $valores_cookie[0] ?>">
+            </p>
+            <p>
+                <label for="ordenamiento">Ordenar por:</label>
+                <select id="ordenamiento" name="ordenamiento">
+                    <option value="antiguedad_asc" <?php if($valores_cookie[1] == "antiguedad_asc") echo "selected" ?>>Antigüedad (ascendente)</option>
+                    <option value="antiguedad_desc" <?php if($valores_cookie[1] == "antiguedad_desc") echo "selected" ?>>Antigüedad (descendente)</option>
+                    <option value="duracion_asc" <?php if($valores_cookie[1] == "duracion_asc") echo "selected" ?>>Duración de la reserva (ascendente)</option>
+                    <option value="duracion_desc" <?php if($valores_cookie[1] == "duracion_desc") echo "selected" ?>>Duración de la reserva (descendente)</option>
+                </select>
+            </p>
+            <fieldset class="rango-fechas">
+                <legend>Rango de Fechas</legend>
+                <p>
+                    <label for="fecha_inicio">Fecha de Inicio:</label>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" value="<?php echo $valores_cookie[2] ?>">
+                </p>
+                <p>
+                    <label for="fecha_fin">Fecha de Fin:</label>
+                    <input type="date" id="fecha_fin" name="fecha_fin" value="<?php echo $valores_cookie[3] ?>">
+                </p>
+            </fieldset>
+            <p>
+                <label for="comentario">Texto en Comentario:</label>
+                <input type="text" id="comentario" name="comentario" value="<?php echo $valores_cookie[4] ?>">
             </p>
             <div class="boton">
                 <input type="submit" value="Aplicar Filtros" name="filtros-reservas" id="boton-enviar">
@@ -729,11 +756,12 @@ function HTML_gestion_reservas($conexion)
             $total_paginas = 0;
             if (isset($_SESSION["rol"])) {
                 if ($_SESSION["rol"] == "Recepcionista") {
-                    $numero_tuplas = contarReservas($conexion);
+                    $email="";
                 } else {
-                    $numero_tuplas = contarReservasUsuario($conexion, $_SESSION["email"]);
+                    $email=$_SESSION["email"];
                 }
-                $total_paginas = ceil($numero_tuplas[1]["count"] / $_COOKIE["paginacion"]);
+                $numero_tuplas = contarTuplasFiltro($conexion, $valores_cookie[4], $valores_cookie[2], $valores_cookie[3], $email);
+                $total_paginas = ceil($numero_tuplas["count"] / $valores_cookie[0]);
                 if (isset($_GET["pagina_actual"])) {
                     if ($_GET["pagina_actual"] > 0 && $_GET["pagina_actual"] <= $total_paginas) {
                         $pagina_actual = $_GET["pagina_actual"];
@@ -743,12 +771,8 @@ function HTML_gestion_reservas($conexion)
                 } else {
                     $pagina_actual = 1;
                 }
-                $offset = ($pagina_actual - 1) * $_COOKIE["paginacion"];
-                if ($_SESSION["rol"] == "Recepcionista") {
-                    $reservas = getReservas($conexion, $offset, $_COOKIE["paginacion"]);
-                } else {
-                    $reservas = getReservasUsuario($conexion, $_SESSION["email"], $offset, $_COOKIE["paginacion"]);
-                }
+                $offset = ($pagina_actual - 1) * $valores_cookie[0];
+                $reservas = getReservasConFiltro($conexion, $offset, $valores_cookie[0], $valores_cookie[1], $valores_cookie[4], $valores_cookie[2], $valores_cookie[3], $email);
                 if ($reservas[0]) {
                     $reservas = $reservas[1];
                     foreach ($reservas as $fila) {

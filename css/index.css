@@ -370,12 +370,35 @@ fieldset input[type="password"],
 fieldset input[type="date"],
 fieldset input[type="file"],
 fieldset input[type="number"],
-fieldset textarea,
-fieldset select {
+fieldset textarea {
     width: calc(100% - 170px);
     padding: 5px;
     border-radius: 3px;
     border: 1px solid #ccc;
+}
+
+fieldset select {
+    width: calc(100% - 160px);
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+fieldset.rango-fechas {
+    display: inline-block;
+    width: calc(100% - 185px);
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #f9f6f2; 
+}
+
+fieldset.rango-fechas legend {
+    font-size: 16px; 
+    color: #555; 
+    padding: 0 5px; 
+    margin-bottom: 5px; 
 }
 
 .preferencias {

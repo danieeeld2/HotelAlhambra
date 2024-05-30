@@ -23,8 +23,9 @@ if(!isset($_SESSION["ultima-pag-visitada"])){
 }
 
 // Crear cookie para paginación
-if(!isset($_COOKIE["paginacion"])){
-    setcookie("paginacion", 3, time() + (86400 * 30), "/");
+if(!isset($_COOKIE["filtros-reserva"])){
+    $valores_cookie = "3".","."antiguedad_asc".","."".","."".","."";
+    setcookie("filtros-reserva", $valores_cookie, time() + (86400 * 30), "/");
 }
 
 ///////////////////////////////////// GESTION DE LOGIN ///////////////////////////////////////
@@ -263,8 +264,10 @@ if((isset($_SESSION["reserva"]) && $_SESSION["reserva"] == true)){
 ///////////////////////////////////// GESTION DE LISTA DE RESERVAS ///////////////////////////////////////
 // Comprobamos si se ha enviado el formulario de filtrado de reservas
 if(isset($_POST["filtros-reservas"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
-    setcookie("paginacion", $_POST["paginacion"], time() + (86400 * 30), "/");
-    $_COOKIE['paginacion'] = $_POST["paginacion"];
+    $datos = validarFormularioFiltro($conexion);
+    $valores_cookie = $datos["paginacion"].",".$datos["ordenamiento"].",".$datos["fecha_inicio"].",".$datos["fecha_fin"].",".$datos["comentario"];
+    setcookie("filtros-reserva", $valores_cookie, time() + (86400 * 30), "/");
+    $_COOKIE["filtros-reserva"] = $valores_cookie;    
 }
 // Comprobamos si se ha enviado el formulario de cancelar reserva
 if(isset($_POST["borrar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
