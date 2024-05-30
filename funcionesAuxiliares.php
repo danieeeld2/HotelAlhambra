@@ -1,4 +1,5 @@
 <?php 
+require_once("funcionesBD.php");
 // Función para validar que la letra del DNI es correcta
 function validarLetraDNI($dni) {
     $letra = substr($dni, -1);
@@ -100,5 +101,34 @@ function validarFotos() {
         }
         return $datos;
     }
+}
+
+// Función que comprueba si una reserva es posible
+function comprobarReserva($conexion, $capacidad, $entrada, $salida) {
+    // Primero vemos si hay habitaciones con capacidad mayor o igual que pide el usuario
+    [$ok, $resultado] = comprobarCapacidad($conexion, $capacidad);    
+    if(!$ok) {
+        return [false, null];
+    }
+    // Ahora comprobamos si alguna de esas habitaciones está disponible en el rango de fechas
+    $habitacionesDisponibles = array();
+    foreach($resultado as $habitacion) {
+        if(comprobarDisponibilidad($conexion, $habitacion, $entrada, $salida)) {
+            $habitacionesDisponibles[] = $habitacion;
+        }
+    }
+    // Si no hay habitaciones disponibles, devolvemos false
+    if(count($habitacionesDisponibles) == 0) {
+        return [false, null];
+    }
+    // Si hay habitaciones disponibles, calculamos la capacidad de cada una
+    $capacidades = array();
+    foreach($habitacionesDisponibles as $habitacion) {
+        $capacidades[$habitacion] = obtenerCapacidad($conexion, $habitacion);
+    }
+    // Buscar la habitación con la capacidad mínima
+    $min = min($capacidades);
+    $habitacion = array_search($min, $capacidades);
+    return [true, $habitacion];
 }
 ?>

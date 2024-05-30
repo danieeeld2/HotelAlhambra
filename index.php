@@ -3,7 +3,6 @@ require_once("html.php");
 require_once("funcionesValidacion.php");
 require_once("funcionesBD.php");
 require_once("conexionBD.php");
-require_once("gestionarReservas.php");
 
 session_start();
 
