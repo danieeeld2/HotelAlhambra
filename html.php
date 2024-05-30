@@ -743,10 +743,11 @@ function HTML_gestion_reservas($conexion)
                 } else {
                     $pagina_actual = 1;
                 }
+                $offset = ($pagina_actual - 1) * $_COOKIE["paginacion"];
                 if ($_SESSION["rol"] == "Recepcionista") {
-                    $reservas = getReservas($conexion, $pagina_actual, $_COOKIE["paginacion"]);
+                    $reservas = getReservas($conexion, $offset, $_COOKIE["paginacion"]);
                 } else {
-                    $reservas = getReservasUsuario($conexion, $_SESSION["email"], $pagina_actual, $_COOKIE["paginacion"]);
+                    $reservas = getReservasUsuario($conexion, $_SESSION["email"], $offset, $_COOKIE["paginacion"]);
                 }
                 if ($reservas[0]) {
                     $reservas = $reservas[1];
