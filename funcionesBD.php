@@ -1185,5 +1185,89 @@ function instertarLog($conexion, $descripcion, $tipo){
     return $resultado;
 }
 
+// Función para obtener todos los tipos de logs
+function getTipoLogs($conexion) {
+    $query = <<<EOD
+        SELECT DISTINCT Tipo FROM logsHotel
+    EOD;
+
+    $resultado = $conexion->query($query);
+    if (!$resultado) {
+        echo "Error al ejecutar la consulta: " . $conexion->error;
+        return [false, null];
+    }
+
+    $tipos = [];
+    while ($row = $resultado->fetch_assoc()) {
+        $tipos[] = $row['Tipo'];
+    }
+
+    return [true, $tipos];
+}
+
+// Función para contar el número de logs de un determinado tipo
+function contarLogsTipo($conexion, $tipo) {
+    $query = <<<EOD
+        SELECT COUNT(*) as count FROM logsHotel
+    EOD;
+
+    if (!empty($tipo)) {
+        $query .= " WHERE Tipo = ?";
+    }
+
+    $stmt = $conexion->prepare($query);
+    if (!$stmt) {
+        echo "Error al preparar la consulta: " . $conexion->error;
+        return [false, null];
+    }
+
+    if (!empty($tipo)) {
+        $stmt->bind_param("s", $tipo);
+    }
+
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc();
+    $stmt->close();
+    $resultado->close();
+    return $count;
+}
+
+// Función para obtener los logs con filtro del más reciente al más antiguo
+function obtenerLogsFiltro($conexion, $offset, $limit, $tipo) {
+    $query = "SELECT * FROM logsHotel";
+
+    if (!empty($tipo)) {
+        $query .= " WHERE Tipo = ?";
+    }
+
+    $query .= " ORDER BY MarcaTemporal DESC LIMIT ?, ?";
+
+    $stmt = $conexion->prepare($query);
+    if (!$stmt) {
+        echo "Error al preparar la consulta: " . $conexion->error;
+        return [false, null];
+    }
+
+    if (!empty($tipo)) {
+        $stmt->bind_param("sii", $tipo, $offset, $limit);
+    } else {
+        $stmt->bind_param("ii", $offset, $limit);
+    }
+
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    
+    if ($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return [false, null];
+    } else {
+        $logs = $resultado->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $resultado->close();
+        return [true, $logs];
+    }
+}
 
 ?>

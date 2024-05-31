@@ -564,4 +564,37 @@ function validarFiltroUsuarios(){
     return $datos;
 }
 
+function validarFiltroLogs(){
+    // Inicializamos los arrays de datos
+    $datos = array();
+    $datos_cookie = explode(",", $_COOKIE["filtros-logs"]);
+
+    if(isset($_POST["filtros-logs"]) && $_SERVER["REQUEST_METHOD"] == "POST"){
+        // Comprobamos que la paginación no sea nula
+        if(empty($_POST["paginacion"])){
+            $datos["paginacion"] = $datos_cookie[0];
+        } else {
+            // Comprobar que es un número entero
+            if(!is_numeric($_POST["paginacion"]) || !is_int($_POST["paginacion"] + 0)){
+                $datos["paginacion"] = $datos_cookie[0];
+            }else{
+                $datos["paginacion"] = $_POST["paginacion"];
+            }
+        }
+
+        // Comprobamos si el tipo no es nulo
+        if(empty($_POST["tipo"])){
+            $datos["tipo"] = $datos_cookie[1];
+        } else {
+            if($_POST["tipo"] == "Todos"){
+                $datos["tipo"] = "";
+            }else{  
+                $datos["tipo"] = $_POST["tipo"];
+            }
+        }
+    }
+
+    return $datos;
+}
+
 ?>

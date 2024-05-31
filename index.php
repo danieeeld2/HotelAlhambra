@@ -32,6 +32,11 @@ if(!isset($_COOKIE["filtros-usuarios"])){
     $valores_cookie = "3".","."".","."".","."";
     setcookie("filtros-usuarios", $valores_cookie, time() + (86400 * 30), "/");
 }
+// Crear cookie para filtrado de los logs
+if(!isset($_COOKIE["filtros-logs"])){
+    $valores_cookie = "5".","."";
+    setcookie("filtros-logs", $valores_cookie, time() + (86400 * 30), "/");
+}
 
 ///////////////////////////////////// GESTION DE LOGIN ///////////////////////////////////////
 
@@ -53,7 +58,7 @@ if (isset($_POST["iniciar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
             $descripcion = "Inicio de sesión correcto con email " . $_SESSION["datos-login"]["email-sesion"];
             instertarLog($conexion, $descripcion, "Inicio de sesión");
         } else {
-            $descripcion = "Intento de inicio de sesión fallido" . $_SESSION["datos-login"]["email-sesion"];
+            $descripcion = "Intento de inicio de sesión fallido " . $_SESSION["datos-login"]["email-sesion"];
             instertarLog($conexion, $descripcion, "Fallo de inicio de sesión");
             $_SESSION["error-login"] = "<p class='error'>La contraseña es incorrecta</p>";
         }
@@ -423,6 +428,15 @@ if(isset($_POST["modificar-usuario"]) && $_SERVER["REQUEST_METHOD"] == "POST"){
 }
 
 
+///////////////////////////////////// GESTION DE LISTA DE LOGS ///////////////////////////////////////
+// Comprobamos si se ha enviado el formulario de filtrado de logs
+if(isset($_POST["filtros-logs"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $datos = validarFiltroLogs();
+    $valores_cookie = $datos["paginacion"].",".$datos["tipo"];
+    setcookie("filtros-logs", $valores_cookie, time() + (86400 * 30), "/");
+    $_COOKIE["filtros-logs"] = $valores_cookie;    
+}
+
 HTML_init();
 HTML_header();
 HTML_nav();
@@ -506,6 +520,13 @@ if(isset($_GET["pagina"])) {
         case "lista-usuarios":
             if($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Administrador"){
                 HTML_gestion_usuarios($conexion);
+            } else {
+                HTML_error_permisos();
+            }
+            break;
+        case "lista-logs":
+            if($_SESSION["rol"] == "Administrador"){
+                HTML_gestion_logs($conexion);
             } else {
                 HTML_error_permisos();
             }

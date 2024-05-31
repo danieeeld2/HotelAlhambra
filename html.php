@@ -61,6 +61,7 @@ function HTML_nav()
             <?php if ($_SESSION["rol"] == "Recepcionista") echo "<li><a href='index.php?pagina=lista-reservas'>Gestión Reservas</a></li>" ?>
             <?php if ($_SESSION["rol"] == "Cliente") echo "<li><a href='index.php?pagina=lista-reservas'>Mis Reservas</a></li>" ?>
             <?php if ($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Administrador") echo "<li><a href='index.php?pagina=lista-usuarios'>Gestión Usuarios</a></li>" ?>
+            <?php if ($_SESSION["rol"] == "Administrador") echo "<li><a href='index.php?pagina=lista-logs'>Ver Logs</a></li>" ?>
         </ul>
     </nav>
 <?php }
@@ -990,7 +991,83 @@ function HTML_gestion_usuarios($conexion) { ?>
             ?>
         </a>
     </div>
+<?php }
 
+function HTML_gestion_logs($conexion){ ?>
+    <form action="" method="post" novalidate>
+        <?php 
+            $valores_cookie = explode(",", $_COOKIE["filtros-logs"]);
+        ?>
+        <fieldset>
+            <legend>Filtros de Logs</legend>
+            <p>
+                <label id="label-paginacion" for="idpaginacion">Número de Logs a Mostrar:</label>
+                <input type="number" id="idpaginacion" name="paginacion" value="<?php echo $valores_cookie[0] ?>">
+            </p>
+            <?php
+                $tipos_logs = getTipoLogs($conexion);
+                if($tipos_logs[0]){
+                    $tipos_logs = $tipos_logs[1];
+                    echo "<p>";
+                    echo "<label for='idtipo'>Tipo de Log:</label>";
+                    echo "<select id='idtipo' name='tipo'>";
+                    echo "<option value='Todos' ". ($valores_cookie[1] == "" ? "selected" : "") .">Todos</option>";
+                    foreach($tipos_logs as $tipo){
+                        echo "<option value='". $tipo ."' ". ($valores_cookie[1] == $tipo ? "selected" : "") .">". $tipo ."</option>";
+                    }
+                    echo "</select>";
+                    echo "</p>";
+                }
+            ?>
+            <div class="boton">
+                <input type="submit" value="Aplicar Filtros" name="filtros-logs" id="boton-enviar">
+            </div>
+        </fieldset>
+    </form>
+    <section class="listado-logs">
+        <table>
+            <tr>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Tipo</th>
+            </tr>
+            <?php 
+                $total_paginas = 0;
+                $numero_tuplas = contarLogsTipo($conexion, $valores_cookie[1]);
+                $total_paginas = ceil($numero_tuplas["count"] / $valores_cookie[0]);
+                if (isset($_GET["pagina_actual"])) {
+                    if ($_GET["pagina_actual"] > 0 && $_GET["pagina_actual"] <= $total_paginas) {
+                        $pagina_actual = $_GET["pagina_actual"];
+                    } else {
+                        $pagina_actual = 1;
+                    }
+                } else {
+                    $pagina_actual = 1;
+                }
+                $offset = ($pagina_actual - 1) * $valores_cookie[0];
+                $logs = obtenerLogsFiltro($conexion, $offset, $valores_cookie[0], $valores_cookie[1]);
+                if($logs[0]){
+                    $logs = $logs[1];
+                    foreach($logs as $fila){
+                        echo "<tr>";
+                        echo "<td>". date("d-m-Y H:i:s", $fila["MarcaTemporal"]) ."</td>";
+                        echo "<td>". $fila["Descripcion"] ."</td>";
+                        echo "<td>". $fila["Tipo"] ."</td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='3'>No hay logs registrados con dichas especificaciones</td></tr>";
+                }
+            ?>
+        </table>
+    </section>
+    <div class="paginacion">
+        <?php
+            for ($i = 1; $i <= $total_paginas; $i++) {
+                echo "<a href='index.php?pagina=lista-logs&pagina_actual=$i'>$i</a>";
+            }
+        ?>
+    </div>
 <?php }
 
 ?>

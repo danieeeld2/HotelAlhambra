@@ -626,3 +626,24 @@ fieldset.rango-fechas legend {
 .listado-usuarios th {
     background-color: #f2f2f2;
 }
+
+.listado-logs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.listado-logs table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.listado-logs th, .listado-logs td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.listado-logs th {
+    background-color: #f2f2f2;
+}
