@@ -50,9 +50,16 @@ if (isset($_POST["iniciar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
             // Alamecnar email (que es un dato único) en la sesión
             $_SESSION["email"] = $_SESSION["datos-login"]["email-sesion"];
             $_SESSION["iniciado-sesion"] = true;
+            $descripcion = "Inicio de sesión correcto con email " . $_SESSION["datos-login"]["email-sesion"];
+            instertarLog($conexion, $descripcion, "Inicio de sesión");
         } else {
+            $descripcion = "Intento de inicio de sesión fallido" . $_SESSION["datos-login"]["email-sesion"];
+            instertarLog($conexion, $descripcion, "Fallo de inicio de sesión");
             $_SESSION["error-login"] = "<p class='error'>La contraseña es incorrecta</p>";
         }
+    } else {
+        $descripcion = "Intento de inicio de sesión fallido con email " . $_SESSION["datos-login"]["email-sesion"];
+        instertarLog($conexion, $descripcion, "Fallo de inicio de sesión");
     }
 }
 
@@ -60,6 +67,8 @@ if (isset($_POST["iniciar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
 if (isset($_POST["cerrar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     $_SESSION["rol"] = "Anonimo";
     $_SESSION["iniciado-sesion"] = false;
+    $descripcion = "Cierre de sesión con email " . $_SESSION["email"];
+    instertarLog($conexion, $descripcion, "Cierre de sesión");
     unset($_SESSION["usuario"]);
     unset($_SESSION["datos-login"]);
     // Reseteamos la cookie de filtros de usuario (por si se cambia de administrador a recepcionista)
@@ -73,19 +82,24 @@ if(isset($_POST["cambiar-datos-usuario"]) && $_SERVER["REQUEST_METHOD"] == "POST
     [$_SESSION["errores-datos-usuario"], $_SESSION["datos-usuario"]] = validarCambioDatos($conexion);
     if(empty($_SESSION["errores-datos-usuario"])){
         $id = getUsuarioID($conexion, $_SESSION["email"]);
+        $descripcion = "Cambio de datos de usuario con email " . $_SESSION["email"];
         if(!empty($_SESSION["datos-usuario"]["email"])){
             actualizarEmail($conexion, $id, $_SESSION["datos-usuario"]["email"]);
             cambiarEmailReservas($conexion, $_SESSION["email"], $_SESSION["datos-usuario"]["email"]);
             $_SESSION["email"] = $_SESSION["datos-usuario"]["email"];
+            $descripcion .= ". Ha cambiado el email a " . $_SESSION["datos-usuario"]["email"];
         }
         if(!empty($_SESSION["datos-usuario"]["tarjeta"])){
             actualizarTarjeta($conexion, $id, $_SESSION["datos-usuario"]["tarjeta"]);
+            $descripcion .= ". Ha cambiado la tarjeta a " . $_SESSION["datos-usuario"]["tarjeta"];
         }
         if(!empty($_SESSION["datos-usuario"]["clave"])){
             actualizarClave($conexion, $id, $_SESSION["datos-usuario"]["clave"]);
+            $descripcion .= ". Ha cambiado la contraseña";
         }
         unset($_SESSION["datos-usuario"]);
         $_SESSION["exito-cambio-datos-usuario"] = true;
+        instertarLog($conexion, $descripcion, "Cambio de datos de usuario");
     }
 }
 
@@ -99,7 +113,6 @@ if (isset($_POST["confirmar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST")
     if($_SESSION["rol"] != "Administrador"){
         if(isset($_SESSION["modificar-usuario"]) && $_SESSION["modificar-usuario"]){
             borrarUsuario($conexion, $_SESSION["id-usuario"]);
-            unset($_SESSION["modificar-usuario"]);
             unset($_SESSION["id-usuario"]);
         }
         $resultado = insertarUsuario($conexion, $_SESSION["datos-registro"]);
@@ -111,16 +124,31 @@ if (isset($_POST["confirmar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST")
                 $_SESSION["iniciado-sesion"] = true;
                 $_GET["pagina"] = "inicio";
             }
+            if(!isset($_SESSION["modificar-usuario"])){
+                $descripcion = "Registro de usuario correcto con email " . $_SESSION["datos-registro"]["email"];
+                instertarLog($conexion, $descripcion, "Registro de usuario");
+            } else {
+                $descripcion = "Modificación de usuario correcta con email " . $_SESSION["datos-registro"]["email"];
+                instertarLog($conexion, $descripcion, "Modificación de usuario");
+            }
+            if(isset($_SESSION["modificar-usuario"])) unset($_SESSION["modificar-usuario"]);
             unset($_SESSION["datos-registro"]);
         }
     } else {
         if(isset($_SESSION["modificar-usuario"]) && $_SESSION["modificar-usuario"]){
             borrarUsuario($conexion, $_SESSION["id-usuario"]);
-            unset($_SESSION["modificar-usuario"]);
             unset($_SESSION["id-usuario"]);
         }
         $resultado = insertarUsuarioRol($conexion, $_SESSION["datos-registro"], $_SESSION["datos-registro"]["rol"]);
         if($resultado){
+            if(!isset($_SESSION["modificar-usuario"])){
+                $descripcion = "Registro de usuario correcto con email " . $_SESSION["datos-registro"]["email"];
+                instertarLog($conexion, $descripcion, "Registro de usuario");
+            } else {
+                $descripcion = "Modificación de usuario correcta con email " . $_SESSION["datos-registro"]["email"];
+                instertarLog($conexion, $descripcion, "Modificación de usuario");
+            }
+            if(isset($_SESSION["modificar-usuario"])) unset($_SESSION["modificar-usuario"]);
             unset($_SESSION["datos-registro"]);
         }
     }
@@ -148,6 +176,13 @@ if(isset($_POST["confirmar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST"
         }
     }
     if($resultado) {
+        if(isset($_SESSION["modificar-habitacion"]) || isset($_SESSION["modificar-imagen-habitacion"])){
+            $descripcion = "Modificación de habitación correcta con nombre " . $_SESSION["datos-habitacion"]["habitacion"];
+            instertarLog($conexion, $descripcion, "Modificación de habitación");
+        } else {
+            $descripcion = "Registro de habitación correcto con nombre " . $_SESSION["datos-habitacion"]["habitacion"];
+            instertarLog($conexion, $descripcion, "Registro de habitación");
+        }
         if(isset($_SESSION["datos-habitacion"])) unset($_SESSION["datos-habitacion"]);
     }
     if(isset($_SESSION["modificar-habitacion"])) unset($_SESSION["modificar-habitacion"]);
@@ -163,6 +198,8 @@ if(isset($_POST["borrar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     if($resultado) { // Borrar las fotos de la habitación en caso de que se haya eliminado correctamente
         $resultado_fotos = borrarFotosHabitacion($conexion, $habitacion[1]["Habitacion"]);
     }
+    $descripcion = "Eliminación de habitación correcta con nombre " . $habitacion[1]["Habitacion"];
+    instertarLog($conexion, $descripcion, "Eliminación de habitación");
 }
 // Comprobamos si se ha enviado el formulario de editar habitaciones (No gestiona la modificación de imágenes, eso va en un form a parte)
 if(isset($_POST["modificar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
@@ -248,6 +285,8 @@ if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 $_SESSION["datos-reserva"]["email"] = $email;
                 $resultado = crearReservaPendiente($conexion, $habitacion, $email, $_SESSION["datos-reserva"]);
+                $descripcion = "Reserva de habitación pendiente con email " . $email;
+                instertarLog($conexion, $descripcion, "Reserva de habitación Pendiente");
                 if($resultado){
                     $_SESSION["tiempo-inicio-reserva"] = time();
                     $_SESSION["reserva"] = true;
@@ -271,6 +310,8 @@ if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
                 $ok = establecerHabitacionReforma($conexion, $_SESSION["datos-reserva"]["habitacion-reforma"], $_SESSION["datos-reserva"]["entrada"], $_SESSION["datos-reserva"]["salida"]);
                 if($ok){
                     $mantenimiento_confirmado = true;
+                    $descripcion = "Habitación " . $_SESSION["datos-reserva"]["habitacion-reforma"] . " pendiente de reforma";
+                    instertarLog($conexion, $descripcion, "Habitacion Pendiente de Reforma");
                 } else {
                     $mantenimiento_confirmado = false;
                 }
@@ -283,9 +324,13 @@ if(isset($_POST["enviar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
 if(isset($_POST["confirmar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     if(time() - $_SESSION["tiempo-inicio-reserva"] < 30){
         confirmarReserva($conexion, $_SESSION["id-reserva"]);
+        $descripcion = "Reserva de habitación confirmada con email " . $_SESSION["datos-reserva"]["email"];
+        instertarLog($conexion, $descripcion, "Reserva de habitación Confirmada");
         if(isset($_SESSION["datos-reserva"])) unset($_SESSION["datos-reserva"]);
     } else {
         $expirada = true;
+        $descripcion = "Reserva de habitación caducada con email " . $_SESSION["datos-reserva"]["email"];
+        instertarLog($conexion, $descripcion, "Reserva de habitación Caducada");
     }
     if(isset($_SESSION["reserva"])) unset($_SESSION["reserva"]);
     if(isset($_SESSION["tiempo-inicio-reserva"])) unset($_SESSION["tiempo-inicio-reserva"]);
@@ -294,6 +339,8 @@ if(isset($_POST["confirmar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
 // Comprobamos si se ha enviado el formulario de cancelar reserva
 if(isset($_POST["cancelar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     borrarReserva($conexion, $_SESSION["id-reserva"]);
+    $descripcion = "Reserva de habitación cancelada con email " . $_SESSION["datos-reserva"]["email"];
+    instertarLog($conexion, $descripcion, "Reserva de habitación Cancelada");
     if(isset($_SESSION["reserva"])) unset($_SESSION["reserva"]);
     if(isset($_SESSION["tiempo-inicio-reserva"])) unset($_SESSION["tiempo-inicio-reserva"]);
     if(isset($_SESSION["id-reserva"])) unset($_SESSION["id-reserva"]);
@@ -321,6 +368,8 @@ if(isset($_POST["filtros-reservas"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
 // Comprobamos si se ha enviado el formulario de cancelar reserva
 if(isset($_POST["borrar-reserva"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     borrarReserva($conexion, $_POST["id-reserva"]);
+    $descripcion = "Reserva de habitación cancelada con id " . $_POST["id-reserva"];
+    instertarLog($conexion, $descripcion, "Reserva de habitación Cancelada");
 }
 // Comprobar si se ha enviado el formulario de cambiar comentario de reserva
 if(isset($_POST["modificar-comentario"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
@@ -329,6 +378,10 @@ if(isset($_POST["modificar-comentario"]) && $_SERVER["REQUEST_METHOD"] == "POST"
         $comentario = checkInyection($_POST["nuevo-comentario"]);
     }
     $resultado = modificarComentario($conexion, $_POST["id-reserva"], $comentario);
+    if($resultado){
+        $descripcion = "Modificación de comentario de reserva con id " . $_POST["id-reserva"];
+        instertarLog($conexion, $descripcion, "Modificación de comentario de reserva");
+    }
 }
 
 ///////////////////////////////////// GESTION DE LISTA DE USUARIOS ///////////////////////////////////////
@@ -345,6 +398,8 @@ if(isset($_POST["borrar-usuario"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     $resultado = borrarUsuario($conexion, $_POST["id-usuario"]);
     if($resultado){
         borrarReservasUsuarioEmail($conexion, $email);
+        $descripcion = "Eliminación de usuario con email " . $email;
+        instertarLog($conexion, $descripcion, "Eliminación de usuario");
     }
 }
 if(isset($_POST["modificar-usuario"]) && $_SERVER["REQUEST_METHOD"] == "POST"){

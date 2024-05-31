@@ -1174,5 +1174,16 @@ function borrarReservasUsuarioEmail($conexion, $email){
     return true;
 }
 
+function instertarLog($conexion, $descripcion, $tipo){
+    $query = <<< EOD
+        INSERT INTO logsHotel (descripcion, tipo, marcatemporal) VALUES (?, ?, UNIX_TIMESTAMP())
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("ss", $descripcion, $tipo);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+}
+
 
 ?>

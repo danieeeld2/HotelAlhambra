@@ -152,7 +152,7 @@ function HTML_aside($conexion)
             <?php if (isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) HTML_formulario_login();
             else if (isset($_SESSION["iniciado-sesion"]) && $_SESSION["iniciado-sesion"]) HTML_logout() ?>
         </div>
-        <?php if(isset($_SESSION["rol"]) && $_SESSION["rol"] == "Cliente") HTML_cambiar_datos_usuario() ?>
+        <?php HTML_cambiar_datos_usuario() ?>
         <?php 
             if(isset($_SESSION["rol"]) && $_SESSION["rol"] != "Anonimo"){
                 echo "<section class='informacion-2nivel'>";
