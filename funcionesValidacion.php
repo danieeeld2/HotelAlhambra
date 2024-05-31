@@ -2,7 +2,7 @@
 require_once("funcionesAuxiliares.php");
 require_once("funcionesBD.php");
 // Función para validar los datos del formulario de registro
-function validarDatosRegistro(){
+function validarDatosRegistro($conexion){
     // Inicializamos los arrays de errores y datos
     $errores = array();
     $datos = array();
@@ -63,7 +63,12 @@ function validarDatosRegistro(){
                 $errores["email"] = "<p class='error'>El email no es válido</p>";
                 $datos["email"] = "";
             }else{
-                $datos["email"] = $_POST["email"];
+                if(!checkEmail($conexion, $_POST["email"])){
+                    $datos["email"] = $_POST["email"];
+                } else {
+                    $errores["email"] = "<p class='error'>Ya existe una cuenta con este email</p>";
+                    $datos["email"] = "";
+                }
             }
         }
 
@@ -157,6 +162,71 @@ function validarLogIn($conexion) {
         return [$errores, $datos];
 
     }
+}
+
+// Función para validar el formulario de cambio de datos del usuario
+function validarCambioDatos($conexion){
+    $errores = array();
+    $datos = array();
+
+    if(isset($_POST["cambiar-datos-usuario"]) && $_SERVER["REQUEST_METHOD"] == "POST"){
+        // Comprobamos si el email no está vacio
+        if(!empty($_POST["email"])){
+            // Comprobar que el email es válido
+            if(!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)){
+                $errores["email"] = "<p class='error'>El email no es válido</p>";
+                $datos["email"] = "";
+            }else{
+                if(!checkEmail($conexion, $_POST["email"])){
+                    $datos["email"] = $_POST["email"];
+                } else {
+                    $errores["email"] = "<p class='error'>Ya existe una cuenta con este email</p>";
+                    $datos["email"] = "";
+                }
+            }
+        }
+
+        // Comprobamos si la tarjeta no está vacía
+        if(!empty($_POST["tarjeta"])){
+            // Comprobar que la tarjeta tiene 16 dígitos
+            $_POST["tarjeta"] = str_replace(" ", "", $_POST["tarjeta"]);
+            if(!preg_match("/^[0-9]{16}$/", $_POST["tarjeta"])){
+                $errores["tarjeta"] = "<p class='error'>La tarjeta debe contener 16 dígitos</p>";
+                $datos["tarjeta"] = "";
+            }else{
+                // Comprobar que la tarjeta es válida
+                if(!validarTarjeta($_POST["tarjeta"])){
+                    $errores["tarjeta"] = "<p class='error'>La tarjeta no es válida</p>";
+                    $datos["tarjeta"] = "";
+                }else{
+                    $datos["tarjeta"] = str_replace(" ","", $_POST["tarjeta"]);
+                }
+            }
+        }
+
+        // Comprobamos si la clave no está vacía
+        if(!empty($_POST["clave"])){
+            $_POST["clave"] = checkInyection($_POST["clave"]);
+            // Comprobar que la clave tiene al menos 5 caracteres
+            if(strlen($_POST["clave"]) < 5){
+                $errores["clave"] = "<p class='error'>La clave debe tener al menos 5 caracteres</p>";
+                $datos["clave"] = "";
+                $datos["clave-repetida"] = "";
+            }else{
+                $datos["clave"] = $_POST["clave"];
+                // Comprobar que la clave repetida coincide
+                if($_POST["clave"] != $_POST["clave-repetida"]){
+                    $errores["clave-repetida"] = "<p class='error'>Las claves no coinciden</p>";
+                    $datos["clave-repetida"] = "";
+                } else {
+                    $datos["clave-repetida"] = $_POST["clave-repetida"];
+                }
+            }
+        }
+
+    }
+
+    return [$errores, $datos];
 }
 
 // Función para validar el formulario de habitaciones

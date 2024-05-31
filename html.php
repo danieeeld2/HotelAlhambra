@@ -92,7 +92,7 @@ function HTML_formulario_login()
         <?php if (isset($_SESSION["errores-login"]["clave-sesion"])) echo $_SESSION["errores-login"]["clave-sesion"] ?>
         <?php if (isset($_SESSION["error-login"])) echo $_SESSION["error-login"] ?>
         <div class="boton-lateral">
-            <input type="submit" value="Iniciar Sesión" name="iniciar-sesion" id="boton-enviar">
+            <input type="submit" value="Iniciar Sesión" name="iniciar-sesion" id="boton-login">
         </div>
     </form>
 <?php }
@@ -109,8 +109,45 @@ function HTML_logout()
     </form>
 <?php }
 
+function HTML_cambiar_datos_usuario()
+{ ?>
+    <?php
+        $mostrar_formulario = '';
+        if (isset($_SESSION["errores-datos-usuario"]) && !empty($_SESSION["errores-datos-usuario"])) {
+            $mostrar_formulario = 'block';
+        } else {
+            $mostrar_formulario = 'none';
+        }
+    ?>
+    <div class="cambiar-datos-usuario">
+        <button id="mostrar-formulario">Cambiar Datos de Usuario</button>
+        <form id="formulario-cambiar-datos" method="post" style="display: <?php echo $mostrar_formulario ?>;" novalidate>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="<?php if(isset($_SESSION["datos-usuario"]["email"])) echo $_SESSION["datos-usuario"]["email"] ?>"><br>
+            <?php if(isset($_SESSION["errores-datos-usuario"]["email"])) echo $_SESSION["errores-datos-usuario"]["email"] ?>
+            <label for="clave">Clave:</label>
+            <input type="password" id="clave" name="clave" value="<?php if(isset($_SESSION["datos-usuario"]["clave"])) echo $_SESSION["datos-usuario"]["clave"] ?>"><br>
+            <?php if(isset($_SESSION["errores-datos-usuario"]["clave"])) echo $_SESSION["errores-datos-usuario"]["clave"] ?>
+            <label for="repetir-clave">Repetir Clave:</label>
+            <input type="password" id="repetir-clave" name="clave-repetida" value="<?php if(isset($_SESSION["datos-usuario"]["clave-repetida"])) echo $_SESSION["datos-usuario"]["clave-repetida"] ?>"><br>
+            <?php if(isset($_SESSION["errores-datos-usuario"]["clave-repetida"])) echo $_SESSION["errores-datos-usuario"]["clave-repetida"] ?>
+            <label for="numero-tarjeta">Nº Tarjeta:</label>
+            <input type="text" id="numero-tarjeta" name="tarjeta" value="<?php if(isset($_SESSION["datos-usuario"]["tarjeta"])) echo $_SESSION["datos-usuario"]["tarjeta"] ?>"><br>
+            <?php if(isset($_SESSION["errores-datos-usuario"]["tarjeta"])) echo $_SESSION["errores-datos-usuario"]["tarjeta"] ?>
+            <button type="submit" name="cambiar-datos-usuario">Actualizar</button>
+        </form>
+    </div>
+    <?php
+        if(isset($_SESSION["exito-cambio-datos-usuario"])) {
+            echo '<script>alert("¡Datos actualizados correctamente!");</script>';
+            unset($_SESSION["exito-cambio-datos-usuario"]); 
+        }
+    ?>
+    <script src="formularioCambioDatos.js"></script>
+<?php }
+
 // Función para generar el aside
-function HTML_aside()
+function HTML_aside($conexion)
 { ?>
     </div>
     <aside class="zona-lateral">
@@ -118,13 +155,29 @@ function HTML_aside()
             <?php if (isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) HTML_formulario_login();
             else if (isset($_SESSION["iniciado-sesion"]) && $_SESSION["iniciado-sesion"]) HTML_logout() ?>
         </div>
-        <section class="informacion-2nivel">
-            <h2>Información de Interés (Información de Segundo Nivel)</h2>
-            <ul>
-                <li><a href="">Info 1</a></li>
-                <li><a href="">Info 2</a></li>
-            </ul>
-        </section>
+        <?php if(isset($_SESSION["rol"]) && $_SESSION["rol"] == "Cliente") HTML_cambiar_datos_usuario() ?>
+        <?php 
+            if(isset($_SESSION["rol"]) && $_SESSION["rol"] != "Anonimo"){
+                echo "<section class='informacion-2nivel'>";
+                echo "<h2>Información de Interés</h2>";
+                echo "<ul>";
+                if($_SESSION["rol"] == "Cliente"){
+                    echo "<li>Nº Reservas Usuario:". contarReservasUsuario($conexion, $_SESSION["email"])[1]["count"] ."</li>";
+                    $proxima_reserva = obtenerProximaReserva($conexion, $_SESSION["email"]);
+                    if($proxima_reserva != null){
+                        echo "<li>Próxima Reserva:". $proxima_reserva["Habitacion"] . ", " . $proxima_reserva["Entrada"] ."</li>";
+                    }
+                } else if($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Administrador"){
+                    echo "<li>Nº Reservas Confirmadas:". contarReservasEstado($conexion, "Confirmada") ."</li>";
+                    echo "<li>Nº Reservas Pendientes:". contarReservasEstado($conexion, "Pendiente") ."</li>";
+                    echo "<li>Mantenimientos Programados:". contarReservasEstado($conexion, "Mantenimiento") ."</li>";
+                    echo "<li>Nº Clientes:". contarClientes($conexion) ."</li>";
+                    echo "<li>Nº Habutaciones:". contarHabitaciones($conexion) ."</li>";
+                }
+                echo "</ul>";
+                echo "</section>";
+            }
+        ?>
     </aside>
     </div>
 <?php }
@@ -474,7 +527,7 @@ function HTML_tabla_Habitaciones($conexion)
                 while ($fila = $resultado->fetch_assoc()) {
                     echo "<tr>";
                     echo "<td>" . $fila["Habitacion"] . "</td>";
-                    echo "<form action='' method='post'>";
+                    echo "<form action='' method='post' novalidate>";
                     echo "<input type='hidden' name='id-habitacion' value='" . $fila["id"] . "'>";
                     echo "<td><input type='submit' name='modificar-habitacion' value='Modificar'></td>";
                     echo "<td><input type='submit' name='borrar-habitacion' value='Borrar'></td>";
@@ -495,7 +548,7 @@ function HTML_tabla_Habitaciones($conexion)
 
 function HTML_editar_fotos_habitacion()
 { ?>
-    <form action="" method="post" enctype="multipart/form-data">
+    <form action="" method="post" enctype="multipart/form-data" novalidate>
         <fieldset>
             <legend>Subir Fotografías</legend>
             <p>
@@ -522,7 +575,7 @@ function HTML_editar_fotos_habitacion()
                     echo "<tr>";
                     echo "<td>" . $foto["Habitacion"] . "</td>";
                     echo "<td><img src='data:image/jpeg;base64," . $foto["Imagen"] . "' style='max-width:100px;'></td>";
-                    echo "<td><form action='' method='post'><input type='hidden' name='id-foto' value='" . $foto["id"] . "'><input type='submit' name='borrar-foto' value='Borrar'></form></td>";
+                    echo "<td><form action='' method='post' novalidate><input type='hidden' name='id-foto' value='" . $foto["id"] . "'><input type='submit' name='borrar-foto' value='Borrar'></form></td>";
                     echo "</tr>";
                 }
             } else {
@@ -536,7 +589,7 @@ function HTML_editar_fotos_habitacion()
 function HTML_salir_edicion()
 {
     echo <<< HTML
-        <form action="" method="post">
+        <form action="" method="post" novalidate>
             <div class="boton">
                 <input type="submit" value="Salir de la Edición" name="salir-edicion" id="boton-enviar">
             </div>
@@ -640,7 +693,7 @@ function HTML_confirmar_reserva($datos_reserva, $email)
                 <li>Email de Reserva: <?php echo $email ?></li>
             </ul>
         </section>
-        <form action="" method="post">
+        <form action="" method="post" novalidate>
             <div class="fila-boton">
                 <div class="boton">
                     <input type="submit" value="Confirmar Reserva" name="confirmar-reserva" id="boton-enviar">
@@ -699,7 +752,7 @@ function HTML_success_mantenimiento_confirmado()
 
 function HTML_gestion_reservas($conexion)
 { ?>
-    <form action="" method="post">
+    <form action="" method="post" novalidate>
         <?php 
         $valores_cookie = explode(",", $_COOKIE["filtros-reserva"]);
         ?>
@@ -784,7 +837,7 @@ function HTML_gestion_reservas($conexion)
                         echo "<td>" . $fila["Salida"] . "</td>";
                         if (isset($_SESSION["rol"]) && $_SESSION["rol"] == "Recepcionista") echo "<td>" . $fila["Estado"] . "</td>";
                         echo "<td>" . $fila["Precio"] . "</td>";
-                        echo "<form action='' method='post'>";
+                        echo "<form action='' method='post' novalidate>";
                         echo "<td class='comentario'>" . $fila["Comentario"] . "</td>";
                         echo "<td class='nuevo-comentario' style='display:none;'><input type='text' name='nuevo-comentario'></td>";
                         echo "<input type='hidden' name='id-reserva' value='" . $fila["id"] . "'>";

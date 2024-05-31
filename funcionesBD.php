@@ -94,6 +94,103 @@ function getUsuarios($conexion) {
     return [true, $resultado];
 }
 
+// Función para obtener la tarjeta de un usuario
+function obtenerTarjeta($conexion, $email) {
+    $query = <<< EOD
+        SELECT tarjeta FROM usuariosHotel WHERE email = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $resultado->close();
+        $stmt->close();
+        return -1;
+    } else {
+        $tarjeta = $resultado->fetch_assoc()["tarjeta"];
+        $resultado->close();
+        $stmt->close();
+        return $tarjeta;
+    }
+}
+
+// Función para obtener el id de un usuario
+function getUsuarioID($conexion, $email){
+    $query = <<< EOD
+        SELECT id FROM usuariosHotel WHERE email = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta". $conexion->error;
+        return -1;
+    }
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return -1;
+    } else {
+        $id = $resultado->fetch_assoc()["id"];
+        $stmt->close();
+        $resultado->close();
+        return $id;
+    }
+}
+
+// Función para actualizar el email del usuario dado su id
+function actualizarEmail($conexion, $id, $email) {
+    $query = <<< EOD
+        UPDATE usuariosHotel SET email = ? WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("si", $email, $id);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+}
+
+// Función para actualizar la tarjeta del usuario dado su id
+function actualizarTarjeta($conexion, $id, $tarjeta) {
+    $query = <<< EOD
+        UPDATE usuariosHotel SET tarjeta = ? WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("si", $tarjeta, $id);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+}
+
+// Función para actualizar la contraseña del usuario dado su id
+function actualizarClave($conexion, $id, $clave) {
+    $query = <<< EOD
+        UPDATE usuariosHotel SET clave = ? WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $clave = password_hash($clave, PASSWORD_DEFAULT);
+    $stmt->bind_param("si", $clave, $id);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+}
+
+// Función para contar el número total de clientes
+function contarClientes($conexion) {
+    $query = <<< EOD
+        SELECT COUNT(*) as count FROM usuariosHotel WHERE rol = "Cliente"
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc()["count"];
+    $stmt->close();
+    $resultado->close();
+    return $count;
+}
+
 // Función para comprobar si existe la habitación en la BD
 
 function checkNumeroHabitacion($conexion, $habitacion) {
@@ -291,6 +388,19 @@ function borrarFotoID($conexion, $id){
     }
     $stmt->close();
     return true;
+}
+
+function contarHabitaciones($conexion){
+    $query = <<< EOD
+        SELECT COUNT(*) as count FROM habitacionesHotel
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc()["count"];
+    $stmt->close();
+    $resultado->close();
+    return $count;
 }
 
 function contarReservas($conexion){
@@ -769,6 +879,54 @@ function modificarComentario($conexion, $id, $comentario) {
     $resultado = $stmt->execute();
     $stmt->close();
     return $resultado;
+}
+
+// Función para, dado dos emails, cambiar el email de todas las reservas de uno al otro
+function cambiarEmailReservas($conexion, $emailAntiguo, $emailNuevo) {
+    $query = <<< EOD
+        UPDATE reservasHotel SET Email = ? WHERE Email = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("ss", $emailNuevo, $emailAntiguo);
+    $resultado = $stmt->execute();
+    $stmt->close();
+    return $resultado;
+}
+
+// Función para contar el número de reservas de un determinado estado
+function contarReservasEstado($conexion, $estado) {
+    $query = <<< EOD
+        SELECT COUNT(*) as count FROM reservasHotel WHERE Estado = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("s", $estado);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc()["count"];
+    $stmt->close();
+    $resultado->close();
+    return $count;
+}
+
+// Función para obtener la próxima reserva de un usuario
+function obtenerProximaReserva($conexion, $email) {
+    $query = <<< EOD
+        SELECT * FROM reservasHotel WHERE Email = ? AND Entrada >= CURDATE() ORDER BY Salida ASC LIMIT 1
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return null;
+    } else {
+        $reserva = $resultado->fetch_assoc();
+        $stmt->close();
+        $resultado->close();
+        return $reserva;
+    }
 }
 
 ?>

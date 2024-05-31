@@ -59,11 +59,32 @@ if (isset($_POST["cerrar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     unset($_SESSION["datos-login"]);
 }
 
+// Comprobamos si se ha enviado el formulario de cambio de datos del usuario
+if(isset($_POST["cambiar-datos-usuario"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    [$_SESSION["errores-datos-usuario"], $_SESSION["datos-usuario"]] = validarCambioDatos($conexion);
+    if(empty($_SESSION["errores-datos-usuario"])){
+        $id = getUsuarioID($conexion, $_SESSION["email"]);
+        if(!empty($_SESSION["datos-usuario"]["email"])){
+            actualizarEmail($conexion, $id, $_SESSION["datos-usuario"]["email"]);
+            cambiarEmailReservas($conexion, $_SESSION["email"], $_SESSION["datos-usuario"]["email"]);
+            $_SESSION["email"] = $_SESSION["datos-usuario"]["email"];
+        }
+        if(!empty($_SESSION["datos-usuario"]["tarjeta"])){
+            actualizarTarjeta($conexion, $id, $_SESSION["datos-usuario"]["tarjeta"]);
+        }
+        if(!empty($_SESSION["datos-usuario"]["clave"])){
+            actualizarClave($conexion, $id, $_SESSION["datos-usuario"]["clave"]);
+        }
+        unset($_SESSION["datos-usuario"]);
+        $_SESSION["exito-cambio-datos-usuario"] = true;
+    }
+}
+
 ///////////////////////////////////// GESTION DE REGISTRO ///////////////////////////////////////
 
 // Comprobamos si se ha enviado el formulario de registro
 if (isset($_POST["enviar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
-    [$_SESSION["errores-registro"], $_SESSION["datos-registro"]] = validarDatosRegistro();
+    [$_SESSION["errores-registro"], $_SESSION["datos-registro"]] = validarDatosRegistro($conexion);
 }
 if (isset($_POST["confirmar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     $resultado = insertarUsuario($conexion, $_SESSION["datos-registro"]);
@@ -372,7 +393,7 @@ if(isset($_GET["pagina"])) {
 }
 
 
-HTML_aside();
+HTML_aside($conexion);
 HTML_footer() ;
 HTML_close();
 
