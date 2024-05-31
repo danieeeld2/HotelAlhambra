@@ -22,6 +22,28 @@ function insertarUsuario($conexion, $datos) {
     return true;
 }
 
+function insertarUsuarioRol($conexion, $datos, $rol){
+    $query = <<< EOD
+        INSERT INTO usuariosHotel (nombre, apellidos, dni, email, clave, tarjeta, rol) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return false;
+    }
+    // Encriptamos la contraseña
+    $datos["clave"] = password_hash($datos['clave'], PASSWORD_DEFAULT);
+    $stmt->bind_param("sssssss", $datos["nombre"], $datos["apellidos"], $datos["dni"], $datos["email"], $datos["clave"], $datos["tarjeta"], $rol);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return false;
+    }
+    $stmt->close();
+    return true;
+}
+
 // Funcion para comprobar si existe el email en la base de datos
 function checkEmail($conexion, $email){
     $query = <<< EOD
@@ -140,6 +162,30 @@ function getUsuarioID($conexion, $email){
     }
 }
 
+function getUsuariobyID($conexion, $id){
+    $query = <<< EOD
+        SELECT * FROM usuariosHotel WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta". $conexion->error;
+        return [false, null];
+    }
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return [false, null];
+    } else {
+        $usuario = $resultado->fetch_assoc();
+        $stmt->close();
+        $resultado->close();
+        return [true, $usuario];
+    }
+}
+
 // Función para actualizar el email del usuario dado su id
 function actualizarEmail($conexion, $id, $email) {
     $query = <<< EOD
@@ -183,6 +229,21 @@ function contarClientes($conexion) {
         SELECT COUNT(*) as count FROM usuariosHotel WHERE rol = "Cliente"
     EOD;
     $stmt = $conexion->prepare($query);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc()["count"];
+    $stmt->close();
+    $resultado->close();
+    return $count;
+}
+
+// Función para contar el número total de empleados
+function contarUsuarios($conexion, $rol) {
+    $query = <<< EOD
+        SELECT COUNT(*) as count FROM usuariosHotel WHERE rol = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("s", $rol);
     $stmt->execute();
     $resultado = $stmt->get_result();
     $count = $resultado->fetch_assoc()["count"];
@@ -928,5 +989,190 @@ function obtenerProximaReserva($conexion, $email) {
         return $reserva;
     }
 }
+
+// Función para obtener los usuarios (con filtro)
+function obtenerUsuariosFiltro($conexion, $offset, $limit, $dni, $email, $rol){
+    $query = "SELECT * FROM usuariosHotel WHERE 1=1"; 
+
+    // Aplicar filtro si se especifica dni
+    if(!empty($dni)){
+        $query .= " AND dni = ?";
+    }
+
+    // Aplicar filtro si se indica email
+    if(!empty($email)){
+        $query .= " AND email = ?";
+    }
+
+    // Aplicar filtro si se especifica rol
+    if(!empty($rol)){
+        $query .= " AND rol = ?";
+    }
+
+    // Agregar límite y offset
+    $query .= " LIMIT ?, ?";
+
+    $stmt = $conexion->prepare($query);
+    if (!$stmt) {
+        echo "Error al preparar la consulta: " . $conexion->error;
+        return [false, null];
+    }
+
+    // Bindear los parámetros
+    $bindParams = array();
+    $bindParamsTypes = '';
+
+    if(!empty($dni)){
+        $bindParams[] = &$dni;
+        $bindParamsTypes .= 's';
+    }
+    if(!empty($email)){
+        $bindParams[] = &$email;
+        $bindParamsTypes .= 's';
+    }
+
+    if(!empty($rol)){
+        $bindParams[] = &$rol;
+        $bindParamsTypes .= 's';
+    }
+
+    // Agregar tipos de datos para offset y limit
+    $bindParamsTypes .= 'ii';
+    $bindParams[] = &$offset;
+    $bindParams[] = &$limit;
+
+    if ($bindParams) {
+        $stmt->bind_param($bindParamsTypes, ...$bindParams);
+    }
+
+    // Ejecutar la consulta
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    
+    if ($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return [false, null];
+    } else {
+        $usuarios = $resultado->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $resultado->close();
+        return [true, $usuarios];
+    }
+}
+
+function contarTuplasFiltroUsuarios($conexion, $dni, $email, $rol){
+    $query = "SELECT COUNT(*) as count FROM usuariosHotel WHERE 1=1"; 
+
+    // Aplicar filtro si se especifica dni
+    if(!empty($dni)){
+        $query .= " AND dni = ?";
+    }
+
+    // Aplicar filtro si se indica email
+    if(!empty($email)){
+        $query .= " AND email = ?";
+    }
+
+    // Aplicar filtro si se especifica rol
+    if(!empty($rol)){
+        $query .= " AND rol = ?";
+    }
+
+    $stmt = $conexion->prepare($query);
+    if (!$stmt) {
+        echo "Error al preparar la consulta: " . $conexion->error;
+        return [false, null];
+    }
+
+    // Bindear los parámetros
+    $bindParams = array();
+    $bindParamsTypes = '';
+
+    if(!empty($dni)){
+        $bindParams[] = &$dni;
+        $bindParamsTypes .= 's';
+    }
+    if(!empty($email)){
+        $bindParams[] = &$email;
+        $bindParamsTypes .= 's';
+    }
+
+    if(!empty($rol)){
+        $bindParams[] = &$rol;
+        $bindParamsTypes .= 's';
+    }
+
+    if ($bindParams) {
+        $stmt->bind_param($bindParamsTypes, ...$bindParams);
+    }
+
+    // Ejecutar la consulta
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc();
+    $stmt->close();
+    $resultado->close();
+    return $count;
+}
+
+function borrarUsuario($conexion, $id){
+    $query = <<< EOD
+        DELETE FROM usuariosHotel WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return false;
+    }
+    $stmt->bind_param("i", $id);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return false;
+    }
+    $stmt->close();
+    return true;
+}
+
+function obtenerEmailUsuarioID($conexion, $id){
+    $query = <<< EOD
+        SELECT email FROM usuariosHotel WHERE id = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $resultado->close();
+        $stmt->close();
+        return null;
+    } else {
+        $email = $resultado->fetch_assoc()["email"];
+        $resultado->close();
+        $stmt->close();
+        return $email;
+    }
+}
+
+function borrarReservasUsuarioEmail($conexion, $email){
+    $query = <<< EOD
+        DELETE FROM reservasHotel WHERE email = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return false;
+    }
+    $stmt->bind_param("s", $email);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return false;
+    }
+    $stmt->close();
+    return true;
+}
+
 
 ?>

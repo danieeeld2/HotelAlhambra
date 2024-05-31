@@ -63,7 +63,7 @@ function validarDatosRegistro($conexion){
                 $errores["email"] = "<p class='error'>El email no es válido</p>";
                 $datos["email"] = "";
             }else{
-                if(!checkEmail($conexion, $_POST["email"])){
+                if(!checkEmail($conexion, $_POST["email"]) || isset($_SESSION["modificar-usuario"])){
                     $datos["email"] = $_POST["email"];
                 } else {
                     $errores["email"] = "<p class='error'>Ya existe una cuenta con este email</p>";
@@ -114,6 +114,15 @@ function validarDatosRegistro($conexion){
                 }else{
                     $datos["tarjeta"] = str_replace(" ","", $_POST["tarjeta"]);
                 }
+            }
+        }
+
+        // Comprobamos si se ha mandado rol
+        if(!empty($_POST["rol"])){
+            if($_POST["rol"] == "Recepcionista" || $_POST["rol"] == "Administrador" || $_POST["rol"] == "Cliente"){
+                $datos["rol"] = $_POST["rol"];
+            } else {
+                $_POST["rol"] = "Cliente";
             }
         }
 
@@ -433,7 +442,7 @@ function validarDatosReforma() {
 }
 
 function validarFormularioFiltro($conexion){
-    // Inicializamos los arrays de errores y datos
+    // Inicializamos los arrays de datos
     $datos = array();
     $datos_cookie = explode(",", $_COOKIE["filtros-reserva"]);
 
@@ -483,6 +492,72 @@ function validarFormularioFiltro($conexion){
             $datos["comentario"] = "";
         } else {
             $datos["comentario"] = checkInyection($_POST["comentario"]);
+        }
+    }
+
+    return $datos;
+}
+
+function validarFiltroUsuarios(){
+    // Inicializamos los arrays de datos
+    $datos = array();
+    $datos_cookie = explode(",", $_COOKIE["filtros-usuarios"]);
+
+    if(isset($_POST["filtros-usuarios"]) && $_SERVER["REQUEST_METHOD"] == "POST"){
+        // Comprobamos que la paginación no sea nula
+        if(empty($_POST["paginacion"])){
+            $datos["paginacion"] = $datos_cookie[0];
+        } else {
+            // Comprobar que es un número entero
+            if(!is_numeric($_POST["paginacion"]) || !is_int($_POST["paginacion"] + 0)){
+                $datos["paginacion"] = $datos_cookie[0];
+            }else{
+                $datos["paginacion"] = $_POST["paginacion"];
+            }
+        }
+
+        // Comprobamos que el dni no sea nulo
+        if(empty($_POST["dni"])){
+            $datos["dni"] = "";
+        } else {
+            // Comprobar que es un dni válido
+            if(!preg_match("/^[0-9]{8}[A-Z]$/", $_POST["dni"])){
+                $datos["dni"] = $datos_cookie[1];
+            }else{
+                if(!validarLetraDNI($_POST["dni"])){
+                    $datos["dni"] = $datos_cookie[1];
+                }else{
+                    $datos["dni"] = $_POST["dni"];
+                }
+            }
+        }
+
+        // Comprobamos que el email no sea nulo
+        if(empty($_POST["email"])){
+            $datos["email"] = "";
+        } else {
+            // Comprobar que es un email válido
+            if(!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)){
+                $datos["email"] = $datos_cookie[2];
+            }else{
+                $datos["email"] = $_POST["email"];
+            }
+        }
+
+        // Comprobamos que el rol no sea nulo
+        if(empty($_POST["rol"])){
+            $datos["rol"] = $datos_cookie[3];
+        } else {
+            // Comprobar que es un rol válido
+            if($_POST["rol"] != "Administrador" && $_POST["rol"] != "Recepcionista" && $_POST["rol"] != "Cliente" && $_POST["rol"] != "Todos"){
+                $datos["rol"] = $datos_cookie[3];
+            }else{
+                if($_POST["rol"] == "Todos"){
+                    $datos["rol"] = "";
+                }else{  
+                    $datos["rol"] = $_POST["rol"];
+                }
+            }
         }
     }
 

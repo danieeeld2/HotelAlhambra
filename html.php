@@ -60,10 +60,7 @@ function HTML_nav()
             <?php if ($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente") echo "<li><a href='index.php?pagina=reservas'>Reservar</a></li>" ?>
             <?php if ($_SESSION["rol"] == "Recepcionista") echo "<li><a href='index.php?pagina=lista-reservas'>Gestión Reservas</a></li>" ?>
             <?php if ($_SESSION["rol"] == "Cliente") echo "<li><a href='index.php?pagina=lista-reservas'>Mis Reservas</a></li>" ?>
-        </ul>
-        <ul class="sesion-pantalla-reducida">
-            <li><a href=""><?php if (isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) echo "LogIn";
-                            else echo "LogOut" ?> </a></li>
+            <?php if ($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Administrador") echo "<li><a href='index.php?pagina=lista-usuarios'>Gestión Usuarios</a></li>" ?>
         </ul>
     </nav>
 <?php }
@@ -367,7 +364,7 @@ function HTML_form_registro()
             <?php if (isset($_SESSION["datos-registro"]["correcto"]))  echo "<h2 class='datos-recibidos'>Los datos se han recibido correctamente</h2>" ?>
             <?php if (isset($_SESSION["datos-registro"]["correcto"])) $disable = "disabled";
             else $disable = ""; ?>
-            <form action="" method="post" novalidate>
+            <form action="<?php if(isset($_SESSION["modificar-usuario"]) && $_SESSION["modificar-usuario"]) echo "index.php?pagina=registro"?>" method="post" novalidate>
                 <fieldset>
                     <legend>Datos del Usuario</legend>
                     <p>
@@ -412,6 +409,19 @@ function HTML_form_registro()
                     </p>
                     <?php if (isset($_SESSION["errores-registro"]["tarjeta"])) echo $_SESSION["errores-registro"]["tarjeta"] ?>
                 </fieldset>
+                <?php if($_SESSION["rol"] == "Administrador") { ?>
+                    <fieldset>
+                        <legend>Rol</legend>
+                        <p>
+                            <label for="rol">Rol:</label>
+                            <select id="rol" name="rol">
+                                <option value="Cliente" <?php if(isset($_SESSION["datos-registro"]["rol"]) && $_SESSION["datos-registro"]["rol"] == "Cliente") echo "selected" ?>>Cliente</option>
+                                <option value="Recepcionista" <?php if(isset($_SESSION["datos-registro"]["rol"]) && $_SESSION["datos-registro"]["rol"] == "Recepcionista") echo "selected" ?>>Recepcionista</option>
+                                <option value="Administrador" <?php if(isset($_SESSION["datos-registro"]["rol"]) && $_SESSION["datos-registro"]["rol"] == "Administrador") echo "selected" ?>>Administrador</option>
+                            </select>
+                        </p>
+                    </fieldset>
+                <?php } ?>
                 <div class="boton">
                     <?php
                     if (isset($_SESSION["datos-registro"]["correcto"])) {
@@ -865,6 +875,122 @@ function HTML_gestion_reservas($conexion)
             ?>
     </div>
     <?php if(isset($_GET["pagina"]) && $_GET["pagina"] == "lista-reservas") echo "<script src='tablaReservas.js'></script>"; ?>
+<?php }
+
+function HTML_gestion_usuarios($conexion) { ?>
+    <form action="" method="post" novalidate>
+        <?php 
+            $valores_cookie = explode(",", $_COOKIE["filtros-usuarios"]);
+        ?>
+        <fieldset>
+            <legend>Filtros</legend>
+            <p>
+                <label id="label-paginacion" for="idpaginacion">Número de Usuarios a Mostrar:</label>
+                <input type="number" id="idpaginacion" name="paginacion" value="<?php echo $valores_cookie[0] ?>">
+            </p>
+            <p>
+                <label for="iddni">DNI:</label>
+                <input type="text" id="iddni" name="dni" value="<?php echo $valores_cookie[1] ?>">
+            </p>
+            <p>
+                <label for="idemail">Email:</label>
+                <input type="email" id="idemail" name="email" value="<?php echo $valores_cookie[2] ?>">
+            </p>
+            <?php if($_SESSION["rol"] == "Administrador") { ?>
+                <p>
+                    <label for="rol">Rol:</label>
+                    <select id="rol" name="rol">
+                        <option value="Todos" <?php if($valores_cookie[3] == "") echo "selected" ?>>Todos</option>
+                        <option value="Cliente" <?php if($valores_cookie[3] == "Cliente") echo "selected" ?>>Cliente</option>
+                        <option value="Recepcionista" <?php if($valores_cookie[3] == "Recepcionista") echo "selected" ?>>Recepcionista</option>
+                        <option value="Administrador" <?php if($valores_cookie[3] == "Administrador") echo "selected" ?>>Administrador</option>
+                    </select>
+                </p>
+            <?php } ?>
+            <div class="boton">
+                <input type="submit" value="Aplicar Filtros" name="filtros-usuarios" id="boton-enviar">
+            </div>
+        </fieldset>
+    </form>
+    <section class="listado-usuarios">
+        <table>
+            <tr>
+                <?php if($_SESSION["rol"] == "Administrador") echo "<th>Rol</th>" ?>
+                <th>Nombre</th>
+                <th>Apellidos</th>
+                <th>DNI</th>
+                <th>Email</th>
+                <th>Modificar</th>
+                <th>Eliminar</th>
+            </tr>
+            <?php
+                $total_paginas = 0;
+                if($_SESSION["rol"] == "Recepcionista") {
+                    $numero_tuplas = contarTuplasFiltroUsuarios($conexion, $valores_cookie[1], $valores_cookie[2], "Cliente");
+                } else {
+                    $numero_tuplas = contarTuplasFiltroUsuarios($conexion, $valores_cookie[1], $valores_cookie[2], $valores_cookie[3]);
+                }
+                $total_paginas = ceil($numero_tuplas["count"] / $valores_cookie[0]);
+                if (isset($_GET["pagina_actual"])) {
+                    if ($_GET["pagina_actual"] > 0 && $_GET["pagina_actual"] <= $total_paginas) {
+                        $pagina_actual = $_GET["pagina_actual"];
+                    } else {
+                        $pagina_actual = 1;
+                    }
+                } else {
+                    $pagina_actual = 1;
+                }
+                $offset = ($pagina_actual - 1) * $valores_cookie[0];
+                if($_SESSION["rol"] == "Recepcionista") {
+                    $usuarios = obtenerUsuariosFiltro($conexion,  $offset, $valores_cookie[0], $valores_cookie[1], $valores_cookie[2], "Cliente");
+                } else {
+                    $usuarios = obtenerUsuariosFiltro($conexion,  $offset, $valores_cookie[0], $valores_cookie[1], $valores_cookie[2], $valores_cookie[3]);
+                }
+                if($usuarios[0]){
+                    $usuarios = $usuarios[1];
+                    foreach($usuarios as $fila){
+                        echo "<tr>";
+                        if($_SESSION["rol"] == "Administrador") echo "<td>". $fila["rol"] ."</td>";
+                        echo "<td>". $fila["nombre"] ."</td>";
+                        echo "<td>". $fila["apellidos"] ."</td>";
+                        echo "<td>". $fila["dni"] ."</td>";
+                        echo "<td>". $fila["email"] ."</td>";
+                        echo "<form action='' method='post' novalidate>";
+                        echo "<input type='hidden' name='id-usuario' value='" . $fila["id"] . "'>";
+                        echo "<td><input type='submit' name='modificar-usuario' value='Modificar Usuario'></td>";
+                        echo "<td><input type='submit' name='borrar-usuario' value='Borrar'></td>";
+                        echo "</form>";
+                        echo "</tr>";
+                    }
+                } else {
+                    if($_SESSION["rol"] == "Recepcionista"){
+                        echo "<tr><td colspan='6'>No hay clientes registrados con dichas especificaciones</td></tr>";
+                    } else {
+                        echo "<tr><td colspan='7'>No hay usuarios registrados con dichas especificaciones</td></tr>";
+                    }
+                }
+            ?>
+        </table>
+    </section>
+    <div class="paginacion">
+        <?php
+            for ($i = 1; $i <= $total_paginas; $i++) {
+                echo "<a href='index.php?pagina=lista-usuarios&pagina_actual=$i'>$i</a>";
+            }
+        ?>
+    </div>
+    <div class="paginacion">
+        <a href="index.php?pagina=registro">
+            <?php
+                if($_SESSION["rol"] == "Recepcionista"){
+                    echo "Crear nuevo Cliente";
+                } else {
+                    echo "Crear nuevo Usuario";
+                }
+            ?>
+        </a>
+    </div>
+
 <?php }
 
 ?>

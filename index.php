@@ -22,10 +22,15 @@ if(!isset($_SESSION["ultima-pag-visitada"])){
     $_SESSION["ultima-pag-visitada"] = "inicio";
 }
 
-// Crear cookie para paginación
+// Crear cookie para filtros de la reserva
 if(!isset($_COOKIE["filtros-reserva"])){
-    $valores_cookie = "3".","."antiguedad_asc".","."".","."".","."";
+    $valores_cookie = "3".","."".","."".","."";
     setcookie("filtros-reserva", $valores_cookie, time() + (86400 * 30), "/");
+}
+// Crear cookie para filtros de listado de usuarios
+if(!isset($_COOKIE["filtros-usuarios"])){
+    $valores_cookie = "3".","."".","."".","."";
+    setcookie("filtros-usuarios", $valores_cookie, time() + (86400 * 30), "/");
 }
 
 ///////////////////////////////////// GESTION DE LOGIN ///////////////////////////////////////
@@ -57,6 +62,10 @@ if (isset($_POST["cerrar-sesion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     $_SESSION["iniciado-sesion"] = false;
     unset($_SESSION["usuario"]);
     unset($_SESSION["datos-login"]);
+    // Reseteamos la cookie de filtros de usuario (por si se cambia de administrador a recepcionista)
+    $valores_cookie = "3".","."".","."".","."";
+    setcookie("filtros-usuarios", $valores_cookie, time() + (86400 * 30), "/");
+    $_COOKIE["filtros-usuarios"] = $valores_cookie;
 }
 
 // Comprobamos si se ha enviado el formulario de cambio de datos del usuario
@@ -87,14 +96,33 @@ if (isset($_POST["enviar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     [$_SESSION["errores-registro"], $_SESSION["datos-registro"]] = validarDatosRegistro($conexion);
 }
 if (isset($_POST["confirmar-registro"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
-    $resultado = insertarUsuario($conexion, $_SESSION["datos-registro"]);
-    if($resultado) {
-        $_SESSION["rol"] = "Cliente";
-        $_SESSION["usuario"] = $_SESSION["datos-registro"]["nombre"];
-        $_SESSION["email"] = $_SESSION["datos-registro"]["email"];
-        $_SESSION["iniciado-sesion"] = true;
-        $_GET["pagina"] = "inicio";
-        unset($_SESSION["datos-registro"]);
+    if($_SESSION["rol"] != "Administrador"){
+        if(isset($_SESSION["modificar-usuario"]) && $_SESSION["modificar-usuario"]){
+            borrarUsuario($conexion, $_SESSION["id-usuario"]);
+            unset($_SESSION["modificar-usuario"]);
+            unset($_SESSION["id-usuario"]);
+        }
+        $resultado = insertarUsuario($conexion, $_SESSION["datos-registro"]);
+        if($resultado) {
+            if(!$_SESSION["iniciado-sesion"]){
+                $_SESSION["rol"] = "Cliente";
+                $_SESSION["usuario"] = $_SESSION["datos-registro"]["nombre"];
+                $_SESSION["email"] = $_SESSION["datos-registro"]["email"];
+                $_SESSION["iniciado-sesion"] = true;
+                $_GET["pagina"] = "inicio";
+            }
+            unset($_SESSION["datos-registro"]);
+        }
+    } else {
+        if(isset($_SESSION["modificar-usuario"]) && $_SESSION["modificar-usuario"]){
+            borrarUsuario($conexion, $_SESSION["id-usuario"]);
+            unset($_SESSION["modificar-usuario"]);
+            unset($_SESSION["id-usuario"]);
+        }
+        $resultado = insertarUsuarioRol($conexion, $_SESSION["datos-registro"], $_SESSION["datos-registro"]["rol"]);
+        if($resultado){
+            unset($_SESSION["datos-registro"]);
+        }
     }
 }
 
@@ -303,6 +331,42 @@ if(isset($_POST["modificar-comentario"]) && $_SERVER["REQUEST_METHOD"] == "POST"
     $resultado = modificarComentario($conexion, $_POST["id-reserva"], $comentario);
 }
 
+///////////////////////////////////// GESTION DE LISTA DE USUARIOS ///////////////////////////////////////
+// Comprobamos si se ha enviado el formulario de filtrado de usuarios
+if(isset($_POST["filtros-usuarios"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $datos = validarFiltroUsuarios();
+    $valores_cookie = $datos["paginacion"].",".$datos["dni"].",".$datos["email"].",".$datos["rol"];
+    setcookie("filtros-usuarios", $valores_cookie, time() + (86400 * 30), "/");
+    $_COOKIE["filtros-usuarios"] = $valores_cookie;    
+}
+// Comprobamos si se ha enviado el formulario de eliminar usuario
+if(isset($_POST["borrar-usuario"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = obtenerEmailUsuarioID($conexion, $_POST["id-usuario"]);
+    $resultado = borrarUsuario($conexion, $_POST["id-usuario"]);
+    if($resultado){
+        borrarReservasUsuarioEmail($conexion, $email);
+    }
+}
+if(isset($_POST["modificar-usuario"]) && $_SERVER["REQUEST_METHOD"] == "POST"){
+    $usuario = getUsuariobyID($conexion, $_POST["id-usuario"]);
+    $_SESSION["id-usuario"] = $_POST["id-usuario"];
+    if($usuario[0]){
+        $usuario = $usuario[1];
+        $_SESSION["datos-registro"]["nombre"] = $usuario["nombre"];
+        $_SESSION["datos-registro"]["apellidos"] = $usuario["apellidos"];
+        $_SESSION["datos-registro"]["email"] = $usuario["email"];
+        $_SESSION["datos-registro"]["dni"] = $usuario["dni"];
+        $_SESSION["datos-registro"]["tarjeta"] = $usuario["tarjeta"];
+        $_SESSION["datos-registro"]["rol"] = $usuario["rol"];
+        $_SESSION["modificar-usuario"] = true;
+        // Nota: La contraseña está hasheada, por lo que no se puede recuperar. Se introduciría una nueva en su lugar y se 
+        // informaría al usuario de que se ha cambiado la contraseña por si quiere cambiarla
+        $_GET["pagina"] = "registro";
+        // Para que no limpie el formualrio al cambiar de página
+        $_SESSION["ultima-pag-visitada"] = "registro";
+    }
+}
+
 
 HTML_init();
 HTML_header();
@@ -328,7 +392,7 @@ if(isset($_GET["pagina"])) {
             HTML_pagina_servicios();
             break;
         case "registro":
-            if($_SESSION["rol"] == "Anonimo"){
+            if($_SESSION["rol"] != "Cliente"){
                 HTML_form_registro() ;
             } else {
                 HTML_error_permisos();
@@ -380,6 +444,13 @@ if(isset($_GET["pagina"])) {
         case "lista-reservas":
             if($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Cliente"){
                 HTML_gestion_reservas($conexion);
+            } else {
+                HTML_error_permisos();
+            }
+            break;
+        case "lista-usuarios":
+            if($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Administrador"){
+                HTML_gestion_usuarios($conexion);
             } else {
                 HTML_error_permisos();
             }

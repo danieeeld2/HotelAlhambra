@@ -605,3 +605,24 @@ fieldset.rango-fechas legend {
 .table-row {
     position: relative;
 }
+
+.listado-usuarios {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.listado-usuarios table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.listado-usuarios th, .listado-usuarios td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.listado-usuarios th {
+    background-color: #f2f2f2;
+}
