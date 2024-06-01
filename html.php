@@ -62,6 +62,7 @@ function HTML_nav()
             <?php if ($_SESSION["rol"] == "Cliente") echo "<li><a href='index.php?pagina=lista-reservas'>Mis Reservas</a></li>" ?>
             <?php if ($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Administrador") echo "<li><a href='index.php?pagina=lista-usuarios'>Gestión Usuarios</a></li>" ?>
             <?php if ($_SESSION["rol"] == "Administrador") echo "<li><a href='index.php?pagina=lista-logs'>Ver Logs</a></li>" ?>
+            <?php if ($_SESSION["rol"] == "Administrador") echo "<li><a href='index.php?pagina=gestion-bd'>Gestión BD</a></li>" ?>
         </ul>
     </nav>
 <?php }
@@ -153,9 +154,9 @@ function HTML_aside($conexion)
             <?php if (isset($_SESSION["iniciado-sesion"]) && !$_SESSION["iniciado-sesion"]) HTML_formulario_login();
             else if (isset($_SESSION["iniciado-sesion"]) && $_SESSION["iniciado-sesion"]) HTML_logout() ?>
         </div>
-        <?php HTML_cambiar_datos_usuario() ?>
         <?php 
             if(isset($_SESSION["rol"]) && $_SESSION["rol"] != "Anonimo"){
+                HTML_cambiar_datos_usuario();
                 echo "<section class='informacion-2nivel'>";
                 echo "<h2>Información de Interés</h2>";
                 echo "<ul>";
@@ -1069,5 +1070,69 @@ function HTML_gestion_logs($conexion){ ?>
         ?>
     </div>
 <?php }
+
+function HTML_gestion_BD() { ?>
+    <form action="" method="post" novalidate>
+        <fieldset>
+            <legend>Gestión de la Base de Datos</legend>
+            <div class="grupo-botones">
+                <div class="boton">
+                    <input type="submit" value="Crear Backup" name="crear-backup" id="boton-enviar">
+                </div>
+                <input type="file" name="backup" id="backup">
+                <div class="boton">
+                    <input type="submit" value="Restaurar Backup" name="restaurar-backup" id="boton-enviar">
+                </div>
+                <div class="boton">
+                    <input type="submit" value="Reiniciar BD" name="reiniciar-bd" id="boton-enviar">
+                </div>
+            </div>
+        </fieldset>
+    </form>
+<?php }
+
+function HTML_error_backup()
+{
+    echo <<< HTML
+        <main>
+            <div class="error-path">
+                <h2>Hubo un error durante la creación del backup/h2>
+            </div>
+        </main>
+    HTML;
+}
+
+function HTML_success_backup()
+{
+    echo <<< HTML
+        <main>
+            <div class="success-path">
+                <h2>Se creó el backup con éxito</h2>
+            </div>
+        </main>
+    HTML;
+}
+
+function HTML_error_reiniciarBD()
+{
+    echo <<< HTML
+        <main>
+            <div class="error-path">
+                <h2>Hubo un error durante el reinicion de la BD</h2>
+            </div>
+        </main>
+    HTML;
+}
+
+function HTML_success_reiniciarBD()
+{
+    echo <<< HTML
+        <main>
+            <div class="success-path">
+                <h2>Se reinció la BD con éxito</h2>
+            </div>
+        </main>
+    HTML;
+}
 
 ?>

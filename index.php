@@ -437,6 +437,23 @@ if(isset($_POST["filtros-logs"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     $_COOKIE["filtros-logs"] = $valores_cookie;    
 }
 
+///////////////////////////////////// GESTION DE BASE DE DATOS ///////////////////////////////////////
+// Comprobamos si se ha enviado el formulario de crear backup base de datos
+if(isset($_POST["crear-backup"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $resultado = crearBackup($conexion);
+    if($resultado){
+        $descripcion = "Creación de backup de la base de datos";
+        instertarLog($conexion, $descripcion, "Creación de backup");
+        $backup = true;
+    } else {
+        $backup = false;
+    }
+}
+// Comprobamos si se ha enviado el formulario de reiniciar la base de datos
+if(isset($_POST["reiniciar-bd"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    $reiniciarBD = reiniciarBD($conexion);
+}
+
 HTML_init();
 HTML_header();
 HTML_nav();
@@ -527,6 +544,27 @@ if(isset($_GET["pagina"])) {
         case "lista-logs":
             if($_SESSION["rol"] == "Administrador"){
                 HTML_gestion_logs($conexion);
+            } else {
+                HTML_error_permisos();
+            }
+            break;
+        case "gestion-bd":
+            if($_SESSION["rol"] == "Administrador"){
+                HTML_gestion_BD();
+                if(isset($backup)){
+                    if($backup){
+                        HTML_success_backup();
+                    } else {
+                        HTML_error_backup();
+                    }
+                }
+                if(isset($reiniciarBD)){
+                    if($reiniciarBD){
+                        HTML_success_reiniciarBD();
+                    } else {
+                        HTML_error_reiniciarBD();
+                    }
+                }
             } else {
                 HTML_error_permisos();
             }

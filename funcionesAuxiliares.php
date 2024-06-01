@@ -1,4 +1,5 @@
 <?php 
+require_once('credenciales.php');
 require_once("funcionesBD.php");
 // Función para validar que la letra del DNI es correcta
 function validarLetraDNI($dni) {
@@ -131,4 +132,57 @@ function comprobarReserva($conexion, $capacidad, $entrada, $salida) {
     $habitacion = array_search($min, $capacidades);
     return [true, $habitacion];
 }
+
+function crearBackup($conexion) {
+    $database = DB_DATABASE;
+    $host = DB_HOST;
+    $username = DB_USER;
+    $password = escapeshellarg(DB_PASSWD);
+
+    // Nombre del archivo de backup
+    $backupFile = $database . '_backup_' . date('Y-m-d_H-i-s') . '.sql';
+
+    // Ruta completa del archivo de backup en la carpeta del proyecto
+    $backupFilePath = __DIR__ . '/backups/' . $backupFile;
+
+    // Comando mysqldump
+    $command = "mysqldump --host=$host --user=$username --password=$password $database > $backupFilePath";
+
+    // Crear la carpeta de backups si no existe
+    if (!file_exists(__DIR__ . '/backups')) {
+        mkdir(__DIR__ . '/backups', 0777, true);
+    }
+
+    // Ejecutar el comando
+    system($command, $output);
+
+    // Verificar si el comando se ejecutó correctamente
+    if ($output === 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function reiniciarBD($conexion) {
+    // Obtener todas las tablas en la base de datos
+    $result = $conexion->query("SHOW TABLES");
+    if ($result) {
+        while ($row = $result->fetch_array()) {
+            $table = $row[0];
+            // Verificar si la tabla es 'usuariosHotel'
+            if ($table == 'usuariosHotel') {
+                // Eliminar el contenido de todas las tuplas excepto la del usuario actual
+                $conexion->query("DELETE FROM $table WHERE email <> '" . $_SESSION["email"] . "'");
+            } else {
+                // Eliminar el contenido de cada tabla
+                $conexion->query("TRUNCATE TABLE $table");
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
 ?>

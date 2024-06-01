@@ -647,3 +647,23 @@ fieldset.rango-fechas legend {
 .listado-logs th {
     background-color: #f2f2f2;
 }
+
+.grupo-botones {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.grupo-botones .boton {
+    margin-right: 10px; /* Espacio entre los botones */
+}
+
+/* Para asegurarte de que el campo de entrada (input) se vea bien junto al botón de enviar */
+#backup {
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+#boton-enviar {
+    vertical-align: middle;
+}
