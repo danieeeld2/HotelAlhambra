@@ -1072,7 +1072,7 @@ function HTML_gestion_logs($conexion){ ?>
 <?php }
 
 function HTML_gestion_BD() { ?>
-    <form action="" method="post" novalidate>
+    <form action="" method="post" enctype="multipart/form-data" novalidate>
         <fieldset>
             <legend>Gestión de la Base de Datos</legend>
             <div class="grupo-botones">
@@ -1080,6 +1080,7 @@ function HTML_gestion_BD() { ?>
                     <input type="submit" value="Crear Backup" name="crear-backup" id="boton-enviar">
                 </div>
                 <input type="file" name="backup" id="backup">
+                <?php if(isset($_SESSION["errores-backup"]["backup"])) echo $_SESSION["errores-backup"]["backup"]; ?>
                 <div class="boton">
                     <input type="submit" value="Restaurar Backup" name="restaurar-backup" id="boton-enviar">
                 </div>
@@ -1096,7 +1097,7 @@ function HTML_error_backup()
     echo <<< HTML
         <main>
             <div class="error-path">
-                <h2>Hubo un error durante la creación del backup/h2>
+                <h2>Hubo un error durante la creación del backup</h2>
             </div>
         </main>
     HTML;
@@ -1130,6 +1131,28 @@ function HTML_success_reiniciarBD()
         <main>
             <div class="success-path">
                 <h2>Se reinció la BD con éxito</h2>
+            </div>
+        </main>
+    HTML;
+}
+
+function HTML_error_restaurar()
+{
+    echo <<< HTML
+        <main>
+            <div class="error-path">
+                <h2>Hubo un error durante la restauración del backup</h2>
+            </div>
+        </main>
+    HTML;
+}
+
+function HTML_success_restaurar()
+{
+    echo <<< HTML
+        <main>
+            <div class="success-path">
+                <h2>Backup restaurado con éxito</h2>
             </div>
         </main>
     HTML;

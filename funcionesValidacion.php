@@ -597,4 +597,26 @@ function validarFiltroLogs(){
     return $datos;
 }
 
+function validarArchivoSQL(){
+    // Inicializamos los arrays de errores
+    $errores = array();
+    $file = null;
+
+    if (isset($_POST["restaurar-backup"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+        // Comprobamos que se ha subido un archivo sql
+        if (empty($_FILES["backup"]["tmp_name"])) {
+            $errores["backup"] = "<p class='error'>No se ha seleccionado ningún archivo</p>";
+        } else {
+            // Comprobamos que el archivo es un sql
+            if ($_FILES["backup"]["type"] != "application/sql") {
+                $errores["backup"] = "<p class='error'>El archivo debe ser un archivo SQL</p>";
+            } else {
+                $file = $_FILES["backup"]["tmp_name"];
+            }
+        }
+    }
+
+    return [$errores, $file];
+}
+
 ?>

@@ -453,6 +453,18 @@ if(isset($_POST["crear-backup"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
 if(isset($_POST["reiniciar-bd"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     $reiniciarBD = reiniciarBD($conexion);
 }
+// Comprobamos que se ha recibido el forulario de restaurar backup
+if(isset($_POST["restaurar-backup"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    [$_SESSION["errores-backup"], $filename] = validarArchivoSQL();
+    if(empty($_SESSION["errores-backup"])){
+        $resultado = restaurarBackup($conexion, $filename);
+        if($resultado){
+            $restaurado = true;
+        } else {
+            $restaurado = false;
+        }
+    }
+}
 
 HTML_init();
 HTML_header();
@@ -563,6 +575,13 @@ if(isset($_GET["pagina"])) {
                         HTML_success_reiniciarBD();
                     } else {
                         HTML_error_reiniciarBD();
+                    }
+                }
+                if(isset($restaurado)){
+                    if($restaurado){
+                        HTML_success_restaurar();
+                    } else {
+                        HTML_error_restaurar();
                     }
                 }
             } else {

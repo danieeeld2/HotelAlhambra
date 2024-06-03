@@ -134,35 +134,56 @@ function comprobarReserva($conexion, $capacidad, $entrada, $salida) {
 }
 
 function crearBackup($conexion) {
-    $database = DB_DATABASE;
-    $host = DB_HOST;
-    $username = DB_USER;
-    $password = escapeshellarg(DB_PASSWD);
-
-    // Nombre del archivo de backup
-    $backupFile = $database . '_backup_' . date('Y-m-d_H-i-s') . '.sql';
-
-    // Ruta completa del archivo de backup en la carpeta del proyecto
-    $backupFilePath = __DIR__ . '/backups/' . $backupFile;
-
-    // Comando mysqldump
-    $command = "mysqldump --host=$host --user=$username --password=$password $database > $backupFilePath";
-
-    // Crear la carpeta de backups si no existe
-    if (!file_exists(__DIR__ . '/backups')) {
-        mkdir(__DIR__ . '/backups', 0777, true);
-    }
-
-    // Ejecutar el comando
-    system($command, $output);
-
-    // Verificar si el comando se ejecutó correctamente
-    if ($output === 0) {
-        return true;
-    } else {
+    // Obtener el listado de tablas en la base de datos
+    $result = mysqli_query($conexion, 'SHOW TABLES');
+    if (!$result) {
+        // Error al obtener las tablas
         return false;
     }
+
+    // Crear una cadena para almacenar el contenido del backup
+    $backupContent = '';
+
+    // Recorrer las tablas
+    while ($row = mysqli_fetch_row($result)) {
+        $table = $row[0];
+
+        // Obtener la estructura de la tabla
+        $tableStructure = mysqli_query($conexion, "SHOW CREATE TABLE $table");
+        if (!$tableStructure) {
+            // Error al obtener la estructura de la tabla
+            return false;
+        }
+
+        $row = mysqli_fetch_row($tableStructure);
+
+        // Añadir la estructura de la tabla a la cadena de contenido del backup
+        $backupContent .= "DROP TABLE IF EXISTS `$table`;\n";
+        $backupContent .= $row[1] . ";\n";
+
+        // Obtener los datos de la tabla y añadirlos a la cadena de contenido del backup
+        $tableData = mysqli_query($conexion, "SELECT * FROM $table");
+        if (!$tableData) {
+            // Error al obtener los datos de la tabla
+            return false;
+        }
+
+        while ($rowData = mysqli_fetch_row($tableData)) {
+            $rowData = array_map('addslashes', $rowData);
+            $backupContent .= "INSERT INTO `$table` VALUES ('" . implode("', '", $rowData) . "');\n";
+        }
+
+        $backupContent .= "\n";
+    }
+
+    // Descargar el backup como un archivo
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename="backup.sql"');
+    echo $backupContent;
+
+    exit();
 }
+
 
 function reiniciarBD($conexion) {
     // Obtener todas las tablas en la base de datos
@@ -185,4 +206,28 @@ function reiniciarBD($conexion) {
     }
 }
 
+function restaurarBackup($conexion, $filename){
+    // Leer el contenido del archivo de backup
+    $backupContent = file_get_contents($filename);
+    if ($backupContent === false) {
+        return false;
+    }
+
+    // Separar el contenido del backup en instrucciones SQL
+    $sqlCommands = explode(";\n", $backupContent);
+
+    // Ejecutar las instrucciones SQL del backup
+    foreach ($sqlCommands as $sqlCommand) {
+        $sqlCommand = trim($sqlCommand);
+        if (!empty($sqlCommand)) {
+            $result = $conexion->query($sqlCommand);
+            if (!$result) {
+                echo "Error MySQL: " . $conexion->error . "\n";
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
 ?>
