@@ -24,7 +24,7 @@ if(!isset($_SESSION["ultima-pag-visitada"])){
 
 // Crear cookie para filtros de la reserva
 if(!isset($_COOKIE["filtros-reserva"])){
-    $valores_cookie = "3".","."".","."".","."";
+    $valores_cookie = "3".","."antiguedad_asc".","."".","."".","."";
     setcookie("filtros-reserva", $valores_cookie, time() + (86400 * 30), "/");
 }
 // Crear cookie para filtros de listado de usuarios

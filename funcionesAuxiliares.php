@@ -220,6 +220,9 @@ function restaurarBackup($conexion, $filename){
     foreach ($sqlCommands as $sqlCommand) {
         $sqlCommand = trim($sqlCommand);
         if (!empty($sqlCommand)) {
+            // Cambiar "" por NULL en las instrucciones SQL para que no de excepciones
+            $sqlCommand = str_replace("''", "NULL", $sqlCommand);
+
             $result = $conexion->query($sqlCommand);
             if (!$result) {
                 echo "Error MySQL: " . $conexion->error . "\n";
@@ -230,4 +233,3 @@ function restaurarBackup($conexion, $filename){
 
     return true;
 }
-?>
