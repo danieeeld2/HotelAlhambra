@@ -173,7 +173,7 @@ function HTML_aside($conexion)
                     echo "<li>Nº Reservas Pendientes:". contarReservasEstado($conexion, "Pendiente") ."</li>";
                     echo "<li>Mantenimientos Programados:". contarReservasEstado($conexion, "Mantenimiento") ."</li>";
                     echo "<li>Nº Clientes:". contarClientes($conexion) ."</li>";
-                    echo "<li>Nº Habutaciones:". contarHabitaciones($conexion) ."</li>";
+                    echo "<li>Nº Habitaciones:". contarHabitaciones($conexion) ."</li>";
                 }
                 echo "</ul>";
                 echo "</section>";
@@ -285,6 +285,7 @@ function HTML_pagina_habitaciones($conexion)
                 }
             }
             echo "</div>";
+            if(empty($fotografias)) echo "<p>No hay imágenes disponibles</p>";
             echo "</section>";
             echo "</section>";
         }
