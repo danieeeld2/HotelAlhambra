@@ -233,3 +233,13 @@ function restaurarBackup($conexion, $filename){
 
     return true;
 }
+
+function getLetraReservas($resultado){
+    if($resultado == "Confirmada"){
+        return "R";
+    } else if($resultado == "Pendiente"){
+        return "P";
+    } else if($resultado == "Mantenimiento"){
+        return "M";
+    }
+}

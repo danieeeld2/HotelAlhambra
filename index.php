@@ -200,14 +200,21 @@ if(isset($_POST["borrar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
     if(isset($_SESSION["datos-habitacion"])) unset($_SESSION["datos-habitacion"]);
     $habitacion = getHabitacionID($conexion, $_POST["id-habitacion"]);
     $resultado = borrarHabitacion($conexion, $_POST["id-habitacion"]);
-    if($resultado) { // Borrar las fotos de la habitación en caso de que se haya eliminado correctamente
+    if($resultado) { // Borrar las fotos de la habitación en caso de que se haya eliminado correctamente y las reservas asociadas
         $resultado_fotos = borrarFotosHabitacion($conexion, $habitacion[1]["Habitacion"]);
+        $resultado_reservas = borrarReservasHabitacion($conexion, $habitacion[1]["Habitacion"]);
     }
     $descripcion = "Eliminación de habitación correcta con nombre " . $habitacion[1]["Habitacion"];
     instertarLog($conexion, $descripcion, "Eliminación de habitación");
 }
 // Comprobamos si se ha enviado el formulario de editar habitaciones (No gestiona la modificación de imágenes, eso va en un form a parte)
 if(isset($_POST["modificar-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    if($_GET["pagina"] == "gestion-reservas-opcional"){
+        $_GET["pagina"] = "gestion-habitaciones";
+        $_SESSION["ultima-pag-visitada"] = "gestion-habitaciones";
+        // Modificar el query string para que se muestre la página de gestión de habitaciones
+        header("Location: index.php?pagina=gestion-habitaciones");
+    }
     if(isset($_SESSION["datos-habitacion"])) unset($_SESSION["datos-habitacion"]);
     $habitacion = getHabitacionID($conexion, $_POST["id-habitacion"]);
     // Bindeamos los datos de la habitación a la variable de sesión
@@ -233,6 +240,12 @@ if(isset($_POST["enviar-modificar-habitacion"]) && $_SERVER["REQUEST_METHOD"] ==
 }
 // Comprobamos si se ha mandado el formulario de edición de imagenes
 if(isset($_POST["modificar-imagenes-habitacion"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
+    if($_GET["pagina"] == "gestion-reservas-opcional"){
+        $_GET["pagina"] = "gestion-habitaciones";
+        $_SESSION["ultima-pag-visitada"] = "gestion-habitaciones";
+        // Modificar el query string para que se muestre la página de gestión de habitaciones
+        header("Location: index.php?pagina=gestion-habitaciones");
+    }
     if(isset($_POST["id-habitacion"])) $_SESSION["id-modificar"] = $_POST["id-habitacion"];
     if(isset($_SESSION["datos-habitacion"])) unset($_SESSION["datos-habitacion"]);
     $habitacion = getHabitacionID($conexion, $_SESSION["id-modificar"]);
@@ -584,6 +597,13 @@ if(isset($_GET["pagina"])) {
                         HTML_error_restaurar();
                     }
                 }
+            } else {
+                HTML_error_permisos();
+            }
+            break;
+        case "gestion-reservas-opcional":
+            if($_SESSION["rol"] == "Recepcionista"){
+                HTML_tabla_opcional_reservas($conexion);
             } else {
                 HTML_error_permisos();
             }

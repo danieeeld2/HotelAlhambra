@@ -271,7 +271,7 @@ footer a:hover {
 
 .table-body {
     display: grid;
-    grid-template-columns: repeat(2, calc(var(--first-column-width)/2)) repeat(9, 1fr);
+    grid-template-columns: repeat(2, calc(2*var(--first-column-width)/5)) calc(var(--first-column-width)/5) repeat(9, 1fr);
     align-items: center;
 }
 
@@ -295,6 +295,42 @@ footer a:hover {
     box-sizing: border-box;
 }
 
+.nombre-habitacion {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 2px;
+}
+
+.nombre-habitacion:hover {
+    overflow: auto;
+    white-space: normal;
+    text-overflow: clip;
+}
+
+.botones-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.botones-header a {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    border: 3px solid #c0a05a;
+    color: #c0a05a;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+span.rowspan img {
+    vertical-align: middle; 
+}
+
+
 .oculto{
     border: 1px solid black;
     user-select: none;
@@ -304,6 +340,12 @@ footer a:hover {
 .rowspan { 
     user-select: none;
     color:transparent;
+}
+
+.dia.na {
+    color: transparent;
+    pointer-events: none;
+    user-select: none;
 }
 
 #boton-menos1,
@@ -322,6 +364,12 @@ footer a:hover {
     border-right: 1px solid black;
     border-top: 0px;
     border-bottom: 0px;
+}
+
+.botones-grid { 
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
 }
 
 /* ------------------- */

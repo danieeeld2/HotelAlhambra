@@ -1,4 +1,5 @@
 <?php
+require_once("funcionesAuxiliares.php");
 // Función para iniciar el documento HTML
 function HTML_init()
 {
@@ -63,6 +64,7 @@ function HTML_nav()
             <?php if ($_SESSION["rol"] == "Recepcionista" || $_SESSION["rol"] == "Administrador") echo "<li><a href='index.php?pagina=lista-usuarios'>Gestión Usuarios</a></li>" ?>
             <?php if ($_SESSION["rol"] == "Administrador") echo "<li><a href='index.php?pagina=lista-logs'>Ver Logs</a></li>" ?>
             <?php if ($_SESSION["rol"] == "Administrador") echo "<li><a href='index.php?pagina=gestion-bd'>Gestión BD</a></li>" ?>
+            <?php if ($_SESSION["rol"] == "Recepcionista") echo "<li><a href='index.php?pagina=gestion-reservas-opcional'>Tabla de Reservas</a></li>" ?>
         </ul>
     </nav>
 <?php }
@@ -188,10 +190,10 @@ function HTML_footer()
         <footer>
             <div class="fila">
                 <div>
-                    <p>Información de autores</p>
+                    <p>Daniel Alconchel & Juan Fernández</p>
                 </div>
                 <div>
-                    <p><a href="css-adaptable.pdf">Documentación CSS</a></p>
+                    <p><a href="documentacion.pdf">Documentación Proyecto</a></p>
                 </div>
                 <div>
                     <p>Copyright</p>
@@ -1157,5 +1159,174 @@ function HTML_success_restaurar()
         </main>
     HTML;
 }
+
+function HTML_tabla_opcional_reservas($conexion) { ?>
+    <main class="tabla-reserva">
+                <div class="table-header">
+                    <span class="botones-header">
+                        Habitaciones
+                        <a href="index.php?pagina=gestion-habitaciones">+</a>
+                    </span>
+                    <span class="botones-header">
+                        Reservas
+                        <a href="index.php?pagina=reservas">+</a>
+                    </span>
+                </div>
+                <div class="table-body">
+                    <span>Nº Hab.</span>
+                    <span class="oculto">Na</span>
+                    <span>Cap.</span>
+                    <span>Hoy</span>
+                    <span class="rowspan" id="boton-menos1">
+                        <img src="img/menos1d.png" alt="-1d" width="20" height="20">
+                    </span>
+                    <?php for ($i = 1; $i < 30; $i++): ?>
+                        <span class="dia" data-dia="<?php echo $i; ?>">
+                            <?php echo date("d-m", strtotime("+$i days")); ?>
+                        </span>
+                    <?php endfor; ?>
+                    <span class="rowspan" id="boton-mas1">
+                        <img src="img/mas1d.png" alt="-1d" width="20" height="20">
+                    </span>
+                </div>
+                <?php
+                    $habitaciones = getHabitaciones($conexion);
+                    if($habitaciones[0]){
+                        $habitaciones = $habitaciones[1];
+                        while($habitacion = $habitaciones->fetch_assoc()){
+                            echo "<div class='table-body'>";
+                            echo "<span class='nombre-habitacion'>". $habitacion["Habitacion"] ."</span>";
+                            echo "<form action='' method='post' novalidate>";
+                            echo "<span class='botones-grid'>";
+                            echo "<input type='hidden' name='id-habitacion' value='". $habitacion["id"] ."'>";
+                            echo "<input type='submit' name='borrar-habitacion' value='Borr.'>";
+                            echo "<input type='submit' name='modificar-habitacion' value='Mod.'>";
+                            echo "<input type='submit' name='modificar-imagenes-habitacion' value='Imgs.'>";
+                            echo "</span>";
+                            echo "</form>";
+                            echo "<span>". $habitacion["Capacidad"] ."</span>";
+                            $reserva_hoy = obtenerReservasHabitacionFecha($conexion, $habitacion["Habitacion"], date("Y-m-d"));
+                            if(!empty($reserva_hoy)){
+                                echo "<span>". getLetraReservas($reserva_hoy[0]["Estado"]) ."</span>";
+                            } else {
+                                echo "<span class='oculto'>". "Na" ."</span>";
+                            }
+                            echo "<span class='rowspan' id='boton-menos1'><img src='img/menos1d.png' alt='-1d' width='20' height='20'></span>";
+                            for ($i = 1; $i < 30; $i++) {
+                                $fecha = date("Y-m-d", strtotime("+$i days"));
+                                $reserva = obtenerReservasHabitacionFecha($conexion, $habitacion["Habitacion"], $fecha);
+                                if (!empty($reserva)) {
+                                    echo "<span class='dia' data-dia='$i' id='dia-{$habitacion["id"]}-{$i}'>" . getLetraReservas($reserva[0]["Estado"]) . "</span>";
+                                } else {
+                                    echo "<span class='dia' data-dia='$i' id='dia-{$habitacion["id"]}-{$i}'>Na</span>";
+                                }
+                            }
+                            echo "<span class='rowspan' id='boton-mas1'><img src='img/mas1d.png' alt='-1d' width='20' height='20'></span>";
+                            echo "</div>";
+                        }
+                    }
+                ?>
+                <div class="table-fila">
+                    <span>Plazas</span>
+                </div>
+                <div class="table-footer">
+                    <span>Total</span>
+                    <?php
+                        $total_reservas = obtenerTotalReservasFecha($conexion, date("Y-m-d"));
+                        if(!empty($total_reservas) || $total_reservas == 0){
+                            echo "<span>". $total_reservas."</span>";
+                        } else {
+                            echo "<span>Error</span>";
+                        }
+                    ?>
+                    <?php echo "<span class='rowspan' id='boton-menos1'><img src='img/menos1d.png' alt='-1d' width='20' height='20'></span>"; ?>
+                    <?php
+                        for ($i = 1; $i < 30; $i++) {
+                            $fecha = date("Y-m-d", strtotime("+$i days"));
+                            $total_reservas = obtenerTotalReservasFecha($conexion, $fecha);
+                            if (!empty($total_reservas) || $total_reservas == 0) {
+                                echo "<span class='dia' data-dia='$i'>". $total_reservas ."</span>";
+                            } else {
+                                echo "<span class='dia' data-dia='$i'>Error</span>";
+                            }
+                        }
+                    ?>
+                    <?php echo "<span class='rowspan' id='boton-mas1'><img src='img/mas1d.png' alt='-1d' width='20' height='20'></span>"; ?>
+                </div>
+                <div class="table-footer">
+                    <span>Usadas</span>
+                    <?php
+                        $confirmadas = obtenerTotalConfirmadasFecha($conexion, date("Y-m-d"));
+                        if(!empty($confirmadas) || $confirmadas == 0){
+                            echo "<span>". $confirmadas."</span>";
+                        } else {
+                            echo "<span>Error</span>";
+                        }
+                    ?>
+                    <?php echo "<span class='rowspan' id='boton-menos1'><img src='img/menos1d.png' alt='-1d' width='20' height='20'></span>"; ?>
+                    <?php
+                        for ($i = 1; $i < 30; $i++) {
+                            $fecha = date("Y-m-d", strtotime("+$i days"));
+                            $confirmadas = obtenerTotalConfirmadasFecha($conexion, $fecha);
+                            if (!empty($confirmadas) || $confirmadas == 0) {
+                                echo "<span class='dia' data-dia='$i'>". $confirmadas ."</span>";
+                            } else {
+                                echo "<span class='dia' data-dia='$i'>Error</span>";
+                            }
+                        }
+                    ?>
+                    <?php echo "<span class='rowspan' id='boton-mas1'><img src='img/mas1d.png' alt='-1d' width='20' height='20'></span>"; ?>
+                </div>
+                <div class="table-footer">
+                    <span>Mantenimiento</span>
+                    <?php
+                        $confirmadas = obtenerTotalMantenimientoFecha($conexion, date("Y-m-d"));
+                        if(!empty($confirmadas) || $confirmadas == 0){
+                            echo "<span>". $confirmadas."</span>";
+                        } else {
+                            echo "<span>Error</span>";
+                        }
+                    ?>
+                    <?php echo "<span class='rowspan' id='boton-menos1'><img src='img/menos1d.png' alt='-1d' width='20' height='20'></span>"; ?>
+                    <?php
+                        for ($i = 1; $i < 30; $i++) {
+                            $fecha = date("Y-m-d", strtotime("+$i days"));
+                            $confirmadas = obtenerTotalMantenimientoFecha($conexion, $fecha);
+                            if (!empty($confirmadas) || $confirmadas == 0) {
+                                echo "<span class='dia' data-dia='$i'>". $confirmadas ."</span>";
+                            } else {
+                                echo "<span class='dia' data-dia='$i'>Error</span>";
+                            }
+                        }
+                    ?>
+                    <?php echo "<span class='rowspan' id='boton-mas1'><img src='img/mas1d.png' alt='-1d' width='20' height='20'></span>"; ?>
+                </div>
+                <div class="table-footer">
+                    <span>Libres</span>
+                    <?php
+                        $confirmadas = contarNumeroHabitaciones($conexion)-obtenerTotalReservasFecha($conexion, date("Y-m-d"));
+                        if(!empty($confirmadas) || $confirmadas == 0){
+                            echo "<span>". $confirmadas."</span>";
+                        } else {
+                            echo "<span>Error</span>";
+                        }
+                    ?>
+                    <?php echo "<span class='rowspan' id='boton-menos1'><img src='img/menos1d.png' alt='-1d' width='20' height='20'></span>"; ?>
+                    <?php
+                        for ($i = 1; $i < 30; $i++) {
+                            $fecha = date("Y-m-d", strtotime("+$i days"));
+                            $confirmadas = contarNumeroHabitaciones($conexion)-obtenerTotalReservasFecha($conexion, $fecha);
+                            if (!empty($confirmadas) || $confirmadas == 0) {
+                                echo "<span class='dia' data-dia='$i'>". $confirmadas ."</span>";
+                            } else {
+                                echo "<span class='dia' data-dia='$i'>Error</span>";
+                            }
+                        }
+                    ?>
+                    <?php echo "<span class='rowspan' id='boton-mas1'><img src='img/mas1d.png' alt='-1d' width='20' height='20'></span>"; ?>
+                </div>
+            </main>
+            <script src="tablaOpcional.js"></script>
+<?php }
 
 ?>

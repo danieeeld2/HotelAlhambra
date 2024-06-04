@@ -1270,4 +1270,98 @@ function obtenerLogsFiltro($conexion, $offset, $limit, $tipo) {
     }
 }
 
+function borrarReservasHabitacion($conexion, $habitacion){
+    $query = <<< EOD
+        DELETE FROM reservasHotel WHERE habitacion = ?
+    EOD;
+    $stmt = $conexion->prepare($query);
+    if(!$stmt) {
+        echo "Error al preparar la consulta" . $conexion->error;
+        return false;
+    }
+    $stmt->bind_param("s", $habitacion);
+    $resultado = $stmt->execute();
+    if(!$resultado) {
+        echo "Error al ejecutar la consulta". $conexion->error;
+        return false;
+    }
+    $stmt->close();
+    return true;
+}
+
+function obtenerReservasHabitacionFecha($conexion, $habitacion, $fecha){
+    $query = <<< EOD
+        SELECT * FROM reservasHotel WHERE habitacion = ? AND ? BETWEEN Entrada AND Salida
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("ss", $habitacion, $fecha);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    if($resultado->num_rows == 0) {
+        $stmt->close();
+        $resultado->close();
+        return null;
+    } else {
+        $reservas = $resultado->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $resultado->close();
+        return $reservas;
+    }
+}
+
+function obtenerTotalReservasFecha($conexion, $fecha){
+    $query = <<< EOD
+        SELECT COUNT(*) as count FROM reservasHotel WHERE ? BETWEEN Entrada AND Salida
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("s", $fecha);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc()["count"];
+    $stmt->close();
+    $resultado->close();
+    return $count;
+}
+
+function obtenerTotalConfirmadasFecha($conexion, $fecha){
+    $query = <<< EOD
+        SELECT COUNT(*) as count FROM reservasHotel WHERE ? BETWEEN Entrada AND Salida AND Estado = "Confirmada"
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("s", $fecha);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc()["count"];
+    $stmt->close();
+    $resultado->close();
+    return $count;
+}
+
+function obtenerTotalMantenimientoFecha($conexion, $fecha){
+    $query = <<< EOD
+        SELECT COUNT(*) as count FROM reservasHotel WHERE ? BETWEEN Entrada AND Salida AND Estado = "Mantenimiento"
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("s", $fecha);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc()["count"];
+    $stmt->close();
+    $resultado->close();
+    return $count;
+}
+
+function contarNumeroHabitaciones($conexion){
+    $query = <<< EOD
+        SELECT COUNT(*) as count FROM habitacionesHotel
+    EOD;
+    $stmt = $conexion->prepare($query);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $count = $resultado->fetch_assoc()["count"];
+    $stmt->close();
+    $resultado->close();
+    return $count;
+}
+
 ?>
