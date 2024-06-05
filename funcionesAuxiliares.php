@@ -169,19 +169,14 @@ function crearBackup($conexion) {
         }
 
         while ($rowData = mysqli_fetch_row($tableData)) {
-            $rowData = array_map('addslashes', $rowData);
             $backupContent .= "INSERT INTO `$table` VALUES ('" . implode("', '", $rowData) . "');\n";
         }
 
         $backupContent .= "\n";
     }
 
-    // Descargar el backup como un archivo
-    header('Content-Type: application/octet-stream');
-    header('Content-Disposition: attachment; filename="backup.sql"');
-    echo $backupContent;
-
-    exit();
+    // Devilver un array con los datos descargados
+    return array("backup_content" => $backupContent);
 }
 
 

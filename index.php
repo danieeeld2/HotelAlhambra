@@ -458,6 +458,15 @@ if(isset($_POST["crear-backup"]) && $_SERVER["REQUEST_METHOD"] == "POST") {
         $descripcion = "Creación de backup de la base de datos";
         instertarLog($conexion, $descripcion, "Creación de backup");
         $backup = true;
+        // Encabezado para descargar el archivo
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="backup.sql"');
+
+        // Imprimimos el archivo
+        echo $resultado['backup_content'];
+
+        // Si no lo pongo descarga HTML también
+        exit();
     } else {
         $backup = false;
     }
